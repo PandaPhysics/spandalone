@@ -17,16 +17,18 @@ panda::CollectionBase::~CollectionBase()
 void
 panda::CollectionBase::setStatus(TTree& _tree, utils::BranchList const& _branches)
 {
+  TString sizeBranchName(SizeBranchName(name_).fullName());
+
   // If the size branch does not exist, there is nothing to read from this tree.
   // See comments in IOUtils.cc checkStatus for the ordering of function calls here.
-  if (!_tree.GetBranch(name_ + ".size") && _tree.GetTreeNumber() >= 0)
+  if (!_tree.GetBranch(sizeBranchName) && _tree.GetTreeNumber() >= 0)
     return;
 
   // If explicitly instructed to turn off size -> turn size false
   if (utils::BranchName("size").vetoed(_branches))
-    _tree.SetBranchStatus(name_ + ".size", false);
+    _tree.SetBranchStatus(sizeBranchName), false);
   else
-    _tree.SetBranchStatus(name_ + ".size", true);
+    _tree.SetBranchStatus(sizeBranchName), true);
 
   getData().setStatus(_tree, name_, _branches);
 }
@@ -36,10 +38,12 @@ panda::CollectionBase::getStatus(TTree& _tree) const
 {
   utils::BranchList blist;
 
-  if (_tree.GetBranchStatus(name_ + ".size"))
-    blist.emplace_back(name_ + ".size");
+  SizeBranchName sizeName(name_);
+
+  if (_tree.GetBranchStatus(sizeName.fullName()))
+    blist.emplace_back(sizeName.internalName());
   else
-    blist.emplace_back("!" + name_ + ".size");
+    blist.emplace_back("!" + sizeName.internalName());
 
   blist += getData().getStatus(_tree, name_);
 
@@ -56,7 +60,7 @@ panda::CollectionBase::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = k
   utils::BranchList blist;
 
   if (_fullName) {
-    blist.emplace_back(name_ + ".size");
+    blist.emplace_back(SizeBranchName(name_).internalName());
     blist += getData().getBranchNames(name_);
   }
   else {
@@ -92,7 +96,7 @@ panda::CollectionBase::book(TTree& _tree, utils::BranchList const& _branches/* =
       throw std::runtime_error(("Doubly booking collection " + name_ + " on tree").Data());
   }
 
-  _tree.Branch(name_ + ".size", &size_, "size/i");
+  _tree.Branch(SizeBranchName(name_).fullName(), &size_, "size/i");
 
   getData().book(_tree, name_, _branches, true);
 

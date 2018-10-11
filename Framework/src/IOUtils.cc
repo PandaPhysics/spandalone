@@ -8,6 +8,9 @@
 
 #include <stdexcept>
 
+/*static*/
+char const* panda::utils::BranchName::separator{"."};
+
 panda::utils::BranchName::BranchName(BranchName const& _src) :
   std::vector<TString>(_src),
   isVeto_(_src.isVeto_)
@@ -22,7 +25,7 @@ panda::utils::BranchName::BranchName(char const* _name)
     name = name(1, name.Length());
   }
 
-  auto* parts(name.Tokenize("."));
+  auto* parts(name.Tokenize(separator));
 
   for (auto* s : *parts)
     emplace_back(s->GetName());
@@ -32,39 +35,26 @@ panda::utils::BranchName::BranchName(char const* _name)
 
 panda::utils::BranchName::operator TString() const
 {
-  TString name;
-
-  if (isVeto_)
-    name = "!";
-
-  for (unsigned iN(0); iN != size() - 1; ++iN)
-    name += (*this)[iN] + ".";
-
-  name += back();
-
-  return name;
+  return fullName();
 }
 
 TString
 panda::utils::BranchName::fullName(TString const& _objName/* = ""*/) const
 {
-  TString bFullName(*this);
+  TString name;
 
-  if (_objName.Length() != 0) {
-    if (isVeto_) {
-      // remove the leading '!'
-      bFullName = bFullName(1, bFullName.Length());
-    }
-    
-    bFullName.Prepend(_objName + ".");
+  if (isVeto_)
+    name = "!";
 
-    if (isVeto_) {
-      // and add it to the front
-      bFullName.Prepend("!");
-    }
-  }
+  if (_objName.Length() != 0)
+    name += _objName + separator;
 
-  return bFullName;
+  for (unsigned iN(0); iN != size() - 1; ++iN)
+    name += (*this)[iN] + separator;
+
+  name += back();
+
+  return name;
 }
 
 bool
@@ -117,6 +107,40 @@ panda::utils::BranchName::vetoed(BranchList const& _list) const
   }
   return vetoed;
 }
+
+panda::utils::SizeBranchName::SizeBranchName(char const* _name)
+{
+  auto parsed(parse(_name));
+
+  if (parsed.Length() == 0)
+    emplace_back(_name);
+  else
+    emplace_back(parsed);
+
+  emplace_back("size");
+}
+
+/*static*/
+std::function<TString(TString const&)> panda::utils::SizeBranchName::parse{
+  [](TString const& _bname)->TString {
+    auto* parts(name.Tokenize(separator));
+    if (parts->GetEntries() != 2) {
+      delete parts;
+      return "";
+    }
+
+    TString objName(parts->At(0)->GetName());
+    delete parts;
+    return objName;
+  }
+};
+
+/*static*/
+std::function<TString(TString const&)> panda::utils::SizeBranchName::generate{
+  [](TString const& _objName)->TString {
+    return _objName + ".size";
+  }
+};
 
 panda::utils::BranchList
 panda::utils::BranchList::subList(TString const& _objName) const
@@ -206,7 +230,12 @@ panda::utils::checkStatus(TTree& _tree, TString const& _fullName, Bool_t _status
 Int_t
 panda::utils::setStatus(TTree& _tree, TString const& _objName, BranchName const& _bName, BranchList const& _bList)
 {
-  TString fullName(_bName.fullName(_objName));
+  TString fullName;
+
+  if (_bName.fullName() == "size")
+    fullName = SizeBranchName(_objName).fullName();
+  else
+    fullName = _bName.fullName(_objName);
 
   bool status;
   if (_bName.in(_bList))
@@ -239,7 +268,12 @@ panda::utils::setStatus(TTree& _tree, TString const& _objName, BranchName const&
 panda::utils::BranchName
 panda::utils::getStatus(TTree& _tree, TString const& _objName, BranchName const& _bName)
 {
-  TString fullName(_bName.fullName(_objName));
+  TString fullName;
+
+  if (_bName.fullName() == "size")
+    fullName = SizeBranchName(_objName).fullName();
+  else
+    fullName = _bName.fullName(_objName);
 
   // -1 -> branch does not exist; 0 -> status is already set; 1 -> status is different
   Int_t returnCode(checkStatus(_tree, fullName, true));
@@ -254,7 +288,12 @@ panda::utils::setAddress(TTree& _tree, TString const& _objName, BranchName const
 {
   Int_t returnCode(0);
 
-  TString fullName(_bName.fullName(_objName));
+  TString fullName;
+
+  if (_bName.fullName() == "size")
+    fullName = SizeBranchName(_objName).fullName();
+  else
+    fullName = _bName.fullName(_objName);
 
   if (_setStatus) {
     returnCode = setStatus(_tree, _objName, _bName, _bList);
@@ -309,7 +348,13 @@ panda::utils::book(TTree& _tree, TString const& _objName, BranchName const& _bNa
   if (!_bName.in(_bList))
     return -2;
 
-  TString fullName(_bName.fullName(_objName));
+  TString fullName;
+
+  if (_bName.fullName() == "size")
+    fullName = SizeBranchName(_objName).fullName();
+  else
+    fullName = _bName.fullName(_objName);
+
   if (_tree.GetBranch(fullName))
     throw std::runtime_error(("Branch " + fullName + " booked twice").Data());
 
@@ -318,7 +363,7 @@ panda::utils::book(TTree& _tree, TString const& _objName, BranchName const& _bNa
   lExpr += "/";
   lExpr += _lType;
 
-  _tree.Branch(_bName.fullName(_objName), _bPtr, lExpr);
+  _tree.Branch(fullName, _bPtr, lExpr);
 
   return 1;
 }
@@ -327,13 +372,21 @@ Int_t
 panda::utils::resetAddress(TTree& _tree, TString const& _objName, BranchName const& _bName)
 {
   // bName: electrons.pt
-  auto* branch(_tree.GetBranch(_bName.fullName(_objName)));
+
+  TString fullName;
+
+  if (_bName.fullName() == "size")
+    fullName = SizeBranchName(_objName).fullName();
+  else
+    fullName = _bName.fullName(_objName);
+
+  auto* branch(_tree.GetBranch(fullName));
   if (branch)
     branch->ResetAddress();
 
   if (_tree.InheritsFrom(TChain::Class())) {
     auto& chain(static_cast<TChain&>(_tree));
-    auto* elem(static_cast<TChainElement*>(chain.GetStatus()->FindObject(_bName.fullName(_objName))));
+    auto* elem(static_cast<TChainElement*>(chain.GetStatus()->FindObject(fullName)));
     if (elem)
       elem->SetBaddress(0);
   }
