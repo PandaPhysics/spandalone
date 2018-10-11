@@ -61,30 +61,31 @@ class Branch(Definition):
         # True if the branch itself is an array
         return len(self.arrdef) != 0
 
-    def arrdef_text(self, begin = None, end = None):
-        return ''.join('[%s]' % a for a in self.arrdef[begin:end])
+    def vartype(self):
+        res = self.typename()
+        for size in reversed(self.arrdef):
+            res = 'std::array<%s, %d>' % (res, size)
+
+        return res
 
     def typename(self):
         return Branch.TYPE_MAP[self.type]
 
-    def write_decl(self, out, context):
+    def write_decl(self, out, context, use_std_vector = False):
         if context == 'datastore':
-            if self.is_array():
-                template = '{type} (*{name}){arrdef}{{0}};'
-            else:
-                template = '{type}* {name}{{0}};'
+            if use_std_vector:
+                template = 'std::vector<{vartype}>* {name}{{0}};'
+            else:                
+                template = '{vartype}* {name}{{0}};'
         elif context == 'Singlet' or context == 'TreeEntry':
             if 'm' in self.modifier:
-                template = 'mutable {type} {name}{arrdef}{{{init}}};'
+                template = 'mutable {vartype} {name}{{{init}}};'
             else:
-                template = '{type} {name}{arrdef}{{{init}}};'
+                template = '{vartype} {name}{{{init}}};'
         elif context == 'Element':
-            if self.is_array():
-                template = '{type} (&{name}){arrdef};'
-            else:
-                template = '{type}& {name};'
+            template = '{vartype}& {name};'
 
-        line = template.format(type = self.typename(), name = self.name, arrdef = self.arrdef_text(), init = self.init)
+        line = template.format(vartype = self.vartype(), name = self.name, init = self.init)
 
         if '!' in self.modifier:
             line += ' // transient'
@@ -94,13 +95,20 @@ class Branch(Definition):
 
         out.writeline(line)
 
-    def write_allocate(self, out, context):
+    def write_allocate(self, out, context, use_std_vector = False):
         # context must be datastore
-        out.writeline('{name} = new {type}[nmax_]{arrdef};'.format(name = self.name, type = self.typename(), arrdef = self.arrdef_text()))
+        if use_std_vector:
+            out.writeline('{name} = new std::vector<{vartype}>(nmax_);'.format(name = self.name, vartype = self.vartype()))
+        else:
+            out.writeline('{name} = new {vartype}[nmax_];'.format(name = self.name, vartype = self.vartype()))
 
-    def write_deallocate(self, out, context):
+    def write_deallocate(self, out, context, use_std_vector = False):
         # context must be datastore
-        out.writeline('delete [] {name};'.format(name = self.name))
+        if use_std_vector:
+            out.writeline('delete {name};'.format(name = self.name))
+        else:
+            out.writeline('delete [] {name};'.format(name = self.name))
+
         out.writeline('{name} = 0;'.format(name = self.name))
 
     def write_set_status(self, out, context):
@@ -129,7 +137,7 @@ class Branch(Definition):
 
         out.writeline('blist.push_back(panda::utils::getStatus(_tree, {namevar}, "{name}"));'.format(namevar = namevar, name = self.name))
 
-    def write_set_address(self, out, context):
+    def write_set_address(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
@@ -142,15 +150,19 @@ class Branch(Definition):
         elif context == 'TreeEntry':
             namevar = '""'
 
-        if context == 'datastore' or self.is_array():
+        if (context == 'datastore' and not use_std_vector) or self.is_array():
             ptr = self.name
         else:
             ptr = '&' + self.name
 
         out.writeline('panda::utils::setAddress(_tree, {namevar}, "{name}", {ptr}, _branches, _setStatus);'.format(namevar = namevar, name = self.name, ptr = ptr))
 
-    def write_book(self, out, context):
+    def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
+            return
+
+        if context == 'datastore' and use_std_vector:
+            out.writeline('panda::utils::book(_tree, _name, "{name}", {vartype}, &{name}, _branches);'.format(vartype = self.vartype(), name = self.name))
             return
 
         if self.is_array():
@@ -247,7 +259,7 @@ class Branch(Definition):
         translations = {   # Solve the generic problem of casting, just in case
             'B': 'I',      # Cast chars to ints
             'b': 'i'       # Unsigned
-            }
+        }
 
         translation = Branch.TYPE_MAP.get(translations.get(self.type)) if not self.is_array() else None
         cast = 'static_cast<const {outtype}>({name})'.format(outtype = translation, name = self.name) if translation else self.name

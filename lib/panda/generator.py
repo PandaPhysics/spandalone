@@ -13,6 +13,8 @@ class Generator(object):
         self.namespace = 'panda'
         self.preserve_custom = True
 
+        self.std_vector_branches = False
+
     def add_config(self, path):
         if not path.endswith('.def'):
             raise RuntimeError('Definition file must have file name ending with .def')
@@ -275,8 +277,8 @@ class Generator(object):
 
         if not objdef.is_singlet():
             buf = BufferOutput()
-            objdef.write_datastore_inherited_members(buf)
-            objdef.write_datastore_members(buf)
+            objdef.write_datastore_inherited_members(buf, self.std_vector_branches)
+            objdef.write_datastore_members(buf, self.std_vector_branches)
             replacements['DATASTORE_MEMBERS'] = buf
 
         header = FileOutput(self.outdir + '/Objects/interface/' + objdef.name + '.h', preserve_custom = self.preserve_custom)
@@ -342,16 +344,16 @@ class Generator(object):
             branch.write_assign(assignment, context = context)
             branch.write_set_status(set_status, context = dscontext)
             branch.write_get_status(get_status, context = dscontext)
-            branch.write_set_address(set_address, context = dscontext)
+            branch.write_set_address(set_address, context = dscontext, self.std_vector_branches)
             branch.write_book(book, context = context)
             branch.write_init(init, context = context)
             branch.write_dump(dump)
 
             if not objdef.is_singlet():
                 branch.write_standard_ctor(standard_ctor, context = context)
-                branch.write_allocate(allocate, context = dscontext)
-                branch.write_deallocate(deallocate, context = dscontext)
-                branch.write_book(dsbook, context = dscontext)
+                branch.write_allocate(allocate, context = dscontext, self.std_vector_branches)
+                branch.write_deallocate(deallocate, context = dscontext, self.std_vector_branches)
+                branch.write_book(dsbook, context = dscontext, self.std_vector_branches)
                 branch.write_release_tree(release_tree, context = dscontext)
                 branch.write_resize_vectors(resize_vectors, context = dscontext)
 

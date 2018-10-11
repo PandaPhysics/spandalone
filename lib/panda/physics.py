@@ -84,7 +84,7 @@ class PhysicsObject(Definition, Object):
                 stmt = '#include "{obj}.h"'.format(obj = branch.objname)
                 out.writeline(stmt)
 
-    def write_datastore_inherited_members(self, out):
+    def write_datastore_inherited_members(self, out, use_std_vector = False):
         inheritance = self.inheritance()
 
         for ancestor in inheritance:
@@ -94,13 +94,13 @@ class PhysicsObject(Definition, Object):
             out.writeline('/* {name}'.format(name = ancestor.name))
 
             for branch in ancestor.branches:
-                branch.write_decl(out, context = 'datastore')
+                branch.write_decl(out, context = 'datastore', use_std_vector = use_std_vector)
 
             out.writeline('*/')
 
-    def write_datastore_members(self, out):
+    def write_datastore_members(self, out, use_std_vector = False):
         for branch in self.branches:
-            branch.write_decl(out, context = 'datastore')
+            branch.write_decl(out, context = 'datastore', use_std_vector = use_std_vector)
 
     def write_inherited_public_members(self, out):
         inheritance = self.inheritance()

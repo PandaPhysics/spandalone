@@ -31,7 +31,7 @@ class RefBranch(Branch):
         # create a branch for the index with name {name}_
         Branch.__init__(self, '{name}_{arrdef}/S{mod} = -1'.format(name = self.refname, arrdef = arrdef, mod = mod))
 
-    def write_decl(self, out, context):
+    def write_decl(self, out, context, use_std_vector = False):
         if context == 'datastore':
             out.writeline('ContainerBase const* {name}Container_{{0}};'.format(name = self.refname))
             Branch.write_decl(self, out, context)
@@ -51,7 +51,7 @@ class RefBranch(Branch):
             else:
                 out.writeline('Ref<{type}> {name};'.format(type = self.objname, name = self.refname))
 
-    def write_set_address(self, out, context):
+    def write_set_address(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
@@ -60,7 +60,7 @@ class RefBranch(Branch):
         else:
             Branch.write_set_address(self, out, context)
 
-    def write_book(self, out, context):
+    def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 

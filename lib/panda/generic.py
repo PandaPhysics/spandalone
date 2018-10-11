@@ -50,7 +50,7 @@ class GenericBranch(Branch):
     def typename(self):
         return self.type
 
-    def write_decl(self, out, context):
+    def write_decl(self, out, context, use_std_vector = False):
         if context == 'datastore':
             template = 'std::vector<{type}>* {name}{{0}};'
         elif context == 'Singlet' or context == 'TreeEntry':
@@ -65,16 +65,16 @@ class GenericBranch(Branch):
 
         out.writeline(line)
 
-    def write_allocate(self, out, context):
+    def write_allocate(self, out, context, use_std_vector = False):
         # context must be datastore
         out.writeline('{name} = new std::vector<{type}>(nmax_);'.format(name = self.name, type = self.type))
 
-    def write_deallocate(self, out, context):
+    def write_deallocate(self, out, context, use_std_vector = False):
         # context must be datastore
         out.writeline('delete {name};'.format(name = self.name))
         out.writeline('{name} = 0;'.format(name = self.name))
 
-    def write_set_address(self, out, context):
+    def write_set_address(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
@@ -89,7 +89,7 @@ class GenericBranch(Branch):
 
         out.writeline('utils::setAddress(_tree, {namevar}, "{name}", &{name}, _branches, _setStatus);'.format(namevar = namevar, name = self.name))
 
-    def write_book(self, out, context):
+    def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
