@@ -139,7 +139,7 @@ namespace @NAMESPACE@ {
     @IF[PHYS_PARENT]@
     @PARENT@::dump(_out);
 
-    @ENDIF
+    @ENDIF@
     @DUMP@
   }
 

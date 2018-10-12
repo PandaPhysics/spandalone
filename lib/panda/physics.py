@@ -102,6 +102,12 @@ class PhysicsObject(Definition, Object):
         for branch in self.branches:
             branch.write_decl(out, context = 'datastore', use_std_vector = use_std_vector)
 
+    def write_datastore_vectorptrs(self, out):
+        # Specific for the case where we use std::vector 
+        for branch in self.branches:
+            if type(branch) is Branch:
+                branch.write_vectorptr_decl(out)
+
     def write_inherited_public_members(self, out):
         inheritance = self.inheritance()
 

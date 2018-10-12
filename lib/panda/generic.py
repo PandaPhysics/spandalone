@@ -87,7 +87,7 @@ class GenericBranch(Branch):
         elif context == 'TreeEntry':
             namevar = '""'
 
-        out.writeline('utils::setAddress(_tree, {namevar}, "{name}", &{name}, _branches, _setStatus);'.format(namevar = namevar, name = self.name))
+        out.writeline('panda::utils::setAddress(_tree, {namevar}, "{name}", &{name}, _branches, _setStatus);'.format(namevar = namevar, name = self.name))
 
     def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
@@ -107,7 +107,7 @@ class GenericBranch(Branch):
         else:
             type_name = self.type
 
-        out.writeline('utils::book(_tree, {namevar}, "{name}", "{type}", &{name}, _branches);'.format(namevar = namevar, name = self.name, type = type_name))
+        out.writeline('panda::utils::book(_tree, {namevar}, "{name}", "{type}", &{name}, _branches);'.format(namevar = namevar, name = self.name, type = type_name))
 
     def write_resize_vectors(self, out, context):
         out.writeline('{name}->resize(_size);'.format(name = self.name))

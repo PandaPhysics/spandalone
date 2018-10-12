@@ -93,6 +93,8 @@ namespace panda {
 
     void reallocate_(UInt_t) override;
 
+    TString sizeBranchName_() const override;
+
   private:
     value_type* addr_(unsigned idx = 0);
     value_type const* const_addr_(unsigned idx = 0) const;
@@ -235,6 +237,22 @@ namespace panda {
 
     // deallocate old space
     deallocate_(tmpArray, tmpStore);
+  }
+
+  /*protected*/
+  /* template<class E> */
+  /* template<class T/\* = E::base_type*\/> */
+  /* typename std::enable_if<std::is_same<T, Element>::value, TString>::type */
+  /* Collection<E>::sizeBranchName_() const */
+  /* { */
+  /*   return value_type::datastore::size_name_type(this->getName()).fullName(); */
+  /* } */
+  template<class E>
+  TString
+  Collection<E>::sizeBranchName_() const
+  {
+    typename value_type::datastore::size_name_type sizeName(this->getName());
+    return sizeName.fullName();
   }
 
   /*private*/

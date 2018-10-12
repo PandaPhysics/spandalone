@@ -17,18 +17,19 @@ class Output(object):
         raise NotImplementedError('Output.dump')
 
     def newline(self):
-        self.write('\n')
+        raise NotImplementedError('Output.newline')
 
     def writeline(self, line):
         # Replace simple comments in .def files with doxygen-style back comments
-        self.write((('  ' * self.indent) + line + '\n').replace('//', '///<'))
+        self.write(line.replace('//', '///<'))
+        self.newline()
 
     def writelines(self, lines, line_end = ''):
-        indented_lines = []
-        for line in lines:
-            indented_lines.append(('  ' * self.indent) + line)
+        for line in lines[:-1]:
+            self.writeline(line + line_end)
 
-        self.write((line_end + '\n').join(indented_lines) + '\n')
+        if len(lines) != 0:
+            self.writeline(lines[-1])
 
     def write_from_template(self, template_path, replacements):
         template = open(template_path)
@@ -117,31 +118,39 @@ class BufferOutput(Output):
     def __init__(self):
         Output.__init__(self)
 
-        self.buffer = ''
+        self.buffer = []
 
     def write(self, text):
-        self.buffer += text
+        if len(self.buffer) == 0:
+            self.buffer.append((-1, ''))
+
+        idnt, txt = self.buffer[-1]
+        if idnt == -1:
+            idnt = self.indent
+
+        self.buffer[-1] = (idnt, txt + text)
+
+    def newline(self):
+        self.buffer.append((-1, ''))
 
     def dump(self, indent = 0):
-        if not self.buffer:
+        if len(self.buffer) == 0:
             return ''
 
-        if indent == 0:        
-            return self.buffer
-        else:
-            content = ''
-            lines = self.buffer.split('\n')
-            for i in range(len(lines) - 1):
-                if lines[i]:
-                    content += ('  ' * indent) + lines[i] + '\n'
-                else:
-                    content += '\n'
+        content = ''
+        for idnt, line in self.buffer:
+            if len(content) != 0:
+                content += '\n'
 
-            if lines[-1]:
-                # last line did not end with \n
-                content += ('  ' * indent) + lines[-1]
+            if len(line) == 0:
+                continue
 
-            return content
+            if idnt + indent >= 0:
+                content += ('  ' * (idnt + indent))
+            content += line
+
+        return content
+
 
 class FileOutput(Output):
     """
@@ -186,11 +195,20 @@ class FileOutput(Output):
 
         self._file = open(fname, 'w')
 
+        self._linehead = True
+
     def close(self):
         self._file.close()
 
     def write(self, text):
+        if self._linehead and text != '\n':
+            self._file.write('  ' * self.indent)
+
         self._file.write(text)
+        self._linehead = text.endswith('\n')
+
+    def newline(self):
+        self.write('\n')
 
     def dump(self, indent = 0):
         self._file.flush()

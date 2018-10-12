@@ -79,6 +79,7 @@ class Generator(object):
         self.functions = []
         self.phobjects = []
         self.trees = []
+        self.sizebranch = None
 
     def parse(self):
         # parse all config files
@@ -94,7 +95,11 @@ class Generator(object):
                 
                 if line == '':
                     continue
-        
+
+                if line.startswith('%'):
+                    #comment line
+                    continue
+
                 if line.startswith('<require '):
                     continue
 
@@ -102,10 +107,10 @@ class Generator(object):
                     self.std_vector_branches = eval(line.strip().replace('<std_vector_branches ', '').replace('>', ''))
                     continue
 
-                if line.startswith('%'):
-                    #comment line
+                if line.startswith('<sizebranch>'):
+                    self.sizebranch = SizeBranch(configFile)
                     continue
-        
+       
                 try:
                     self.includes.append(Include(line))
                     continue
@@ -170,6 +175,8 @@ class Generator(object):
         for objdef in self.phobjects:
             self.write_phobj_header(objdef)
             self.write_phobj_src(objdef)
+
+        self.write_size_branch()
 
         # Tree entries
         for treedef in self.trees:
@@ -276,6 +283,7 @@ class Generator(object):
             'NAME': objdef.name,
             'INSTANTIABLE': objdef.instantiable,
             'PARENT': parent,
+            'PHYS_PARENT': (objdef.parent not in ('Singlet', 'Element')),
             'INCLUDES': header_includes,
             'ENUMS': enums,
             'CONSTANTS': constants,
@@ -288,6 +296,17 @@ class Generator(object):
             buf = BufferOutput()
             objdef.write_datastore_inherited_members(buf, self.std_vector_branches)
             objdef.write_datastore_members(buf, self.std_vector_branches)
+
+            if self.std_vector_branches:
+                buf.indent -= 1
+                buf.writeline('protected:')
+                buf.indent += 1
+                objdef.write_datastore_vectorptrs(buf)
+                buf.newline()
+                buf.indent -= 1
+                buf.writeline('public:')
+                buf.indent += 1
+
             replacements['DATASTORE_MEMBERS'] = buf
 
         header = FileOutput(self.outdir + '/Objects/interface/' + objdef.name + '.h', preserve_custom = self.preserve_custom)
@@ -416,6 +435,31 @@ class Generator(object):
         else:
             source.write_from_template(template_path + '/src/element.cc', replacements)
 
+    def write_size_branch(self):
+        # Size branch name for collections
+        replacements = {'NAMESPACE': self.namespace}
+
+        if self.sizebranch is None:
+            replacements['CUSTOM_SIZEBRANCH'] = False
+        else:
+            parse = BufferOutput()
+            self.sizebranch.write_parse(parse)
+            generate = BufferOutput()
+            self.sizebranch.write_generate(generate)
+
+            replacements.update({
+                'CUSTOM_SIZEBRANCH': True,
+                'SIZEBRANCH_PARSE': parse,
+                'SIZEBRANCH_GENERATE': generate
+            })
+
+        outfile = FileOutput(self.outdir + '/Objects/interface/SizeBranchName.h')
+        outfile.write_from_template(template_path + '/interface/SizeBranchName.h', replacements)
+        outfile.close()
+        outfile = FileOutput(self.outdir + '/Objects/src/SizeBranchName.cc')
+        outfile.write_from_template(template_path + '/src/SizeBranchName.cc', replacements)
+        outfile.close()            
+
     def write_tree_header(self, treedef):
         header_includes = BufferOutput()
         treedef.write_header_includes(header_includes)
@@ -432,10 +476,15 @@ class Generator(object):
         for branch in treedef.branches:
             branch.write_decl(branches, context = 'TreeEntry')
 
+        if self.namespace != 'panda' and treedef.parent == 'TreeEntry':
+            parent = 'panda::TreeEntry'
+        else:
+            parent = treedef.parent
+
         replacements = {
             'NAMESPACE': self.namespace,
             'NAME': treedef.name,
-            'PARENT': treedef.parent,
+            'PARENT': parent,
             'INCLUDES': header_includes,
             'FUNCTIONS': functions,
             'OBJBRANCHES': objbranches,
@@ -451,13 +500,13 @@ class Generator(object):
         init_objptrs = BufferOutput()
         if len(treedef.objbranches) != 0:
             ptr_list = ', '.join(['&{name}'.format(name = b.name) for b in treedef.objbranches])
-            init_objptrs.writeline('std::vector<Object*> myObjects{{' + ptr_list + '}};')
+            init_objptrs.writeline('std::vector<panda::Object*> myObjects{{' + ptr_list + '}};')
             init_objptrs.writeline('objects_.insert(objects_.end(), myObjects.begin(), myObjects.end());')
 
         init_collptrs = BufferOutput()
         if len(collections) != 0:
             ptr_list = ', '.join(['&{name}'.format(name = b.name) for b in collections])
-            init_collptrs.writeline('std::vector<CollectionBase*> myCollections{{' + ptr_list + '}};')
+            init_collptrs.writeline('std::vector<panda::CollectionBase*> myCollections{{' + ptr_list + '}};')
             init_collptrs.writeline('collections_.insert(collections_.end(), myCollections.begin(), myCollections.end());')
 
         init_refs = BufferOutput()
@@ -504,10 +553,15 @@ class Generator(object):
             branch.write_book(book, context = 'TreeEntry')
             branch.write_init(init, context = 'TreeEntry')
 
+        if self.namespace != 'panda' and treedef.parent == 'TreeEntry':
+            parent = 'panda::TreeEntry'
+        else:
+            parent = treedef.parent
+
         replacements = {
             'NAMESPACE': self.namespace,
             'NAME': treedef.name,
-            'PARENT': treedef.parent,
+            'PARENT': parent,
             'PHYS_PARENT': (treedef.parent != 'TreeEntry'),
             'INIT_OBJPTRS': init_objptrs,
             'INIT_COLLPTRS': init_collptrs,
@@ -554,10 +608,10 @@ class Generator(object):
                     generics.writeline('#pragma link C++ class std::vector<{type}>+;'.format(type = branch.type))
 
             if not objdef.is_singlet():
-                containers.writeline('#pragma link C++ class @NAMESPACE@::Array<@NAMESPACE@::{name}>;'.format(name = objdef.name))
-                containers.writeline('#pragma link C++ class @NAMESPACE@::Collection<@NAMESPACE@::{name}>;'.format(name = objdef.name))
-                containers.writeline('#pragma link C++ class @NAMESPACE@::Ref<@NAMESPACE@::{name}>;'.format(name = objdef.name))
-                containers.writeline('#pragma link C++ class @NAMESPACE@::RefVector<@NAMESPACE@::{name}>;'.format(name = objdef.name))
+                containers.writeline('#pragma link C++ class panda::Array<@NAMESPACE@::{name}>;'.format(name = objdef.name))
+                containers.writeline('#pragma link C++ class panda::Collection<@NAMESPACE@::{name}>;'.format(name = objdef.name))
+                containers.writeline('#pragma link C++ class panda::Ref<@NAMESPACE@::{name}>;'.format(name = objdef.name))
+                containers.writeline('#pragma link C++ class panda::RefVector<@NAMESPACE@::{name}>;'.format(name = objdef.name))
                 containers.writeline('#pragma link C++ typedef @NAMESPACE@::{name}Array;'.format(name = objdef.name))
                 containers.writeline('#pragma link C++ typedef @NAMESPACE@::{name}Collection;'.format(name = objdef.name))
                 containers.writeline('#pragma link C++ typedef @NAMESPACE@::{name}Ref;'.format(name = objdef.name))

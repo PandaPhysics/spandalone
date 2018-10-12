@@ -63,6 +63,13 @@ namespace panda {
 
     virtual void reallocate_(UInt_t) = 0;
 
+    //! Size branch name
+    /*
+     * Collection<E> reimplements this function with the branch name rule in the namespace
+     * prvided from E
+     */
+    virtual TString sizeBranchName_() const = 0;
+
   private:
     void doSetAddress_(TTree&, utils::BranchList const&, Bool_t setStatus, Bool_t asInput);
 

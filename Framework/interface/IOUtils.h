@@ -58,26 +58,6 @@ namespace panda {
       bool isVeto_{false};
     };
 
-    //! BranchName specialized for collection size branch.
-    /*!
-     * SizeBranchName must be instantiable both from the full branch name and just the object name.
-     * User-provided parse function must return the name of the object or an empty string.
-     */
-    class SizeBranchName : public BranchName {
-    public:
-      SizeBranchName() {}
-      SizeBranchName(SizeBranchName const& src) : BranchName(src) {}
-      SizeBranchName(char const*);
-      SizeBranchName(std::string const& s) : SizeBranchName(s.c_str()) {}
-      SizeBranchName(TString const& s) : SizeBranchName(s.Data()) {}
-
-      TString fullName(TString const& = "") const override { return generate(front()); }
-      TString internalName() const { return BranchName::fullName(); }
-      
-      static std::function<TString(TString const&)> parse;
-      static std::function<TString(TString const&)> generate;
-    };
-
     //! List of branch names
     /*!
      * Basically a vector of BranchNames with a few facilities.

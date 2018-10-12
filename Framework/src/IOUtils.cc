@@ -108,40 +108,6 @@ panda::utils::BranchName::vetoed(BranchList const& _list) const
   return vetoed;
 }
 
-panda::utils::SizeBranchName::SizeBranchName(char const* _name)
-{
-  auto parsed(parse(_name));
-
-  if (parsed.Length() == 0)
-    emplace_back(_name);
-  else
-    emplace_back(parsed);
-
-  emplace_back("size");
-}
-
-/*static*/
-std::function<TString(TString const&)> panda::utils::SizeBranchName::parse{
-  [](TString const& _bname)->TString {
-    auto* parts(name.Tokenize(separator));
-    if (parts->GetEntries() != 2) {
-      delete parts;
-      return "";
-    }
-
-    TString objName(parts->At(0)->GetName());
-    delete parts;
-    return objName;
-  }
-};
-
-/*static*/
-std::function<TString(TString const&)> panda::utils::SizeBranchName::generate{
-  [](TString const& _objName)->TString {
-    return _objName + ".size";
-  }
-};
-
 panda::utils::BranchList
 panda::utils::BranchList::subList(TString const& _objName) const
 {

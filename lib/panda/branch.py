@@ -77,7 +77,7 @@ class Branch(Definition):
     def write_decl(self, out, context, use_std_vector = False):
         if context == 'datastore':
             if use_std_vector:
-                template = 'std::vector<{vartype}>* {name}{{0}};'
+                template = 'std::vector<{vartype}> {name};'
             else:                
                 template = '{vartype}* {name}{{0}};'
         elif context == 'Singlet' or context == 'TreeEntry':
@@ -98,21 +98,24 @@ class Branch(Definition):
 
         out.writeline(line)
 
+    def write_vectorptr_decl(self, out):
+        # context is datastore
+        out.writeline('std::vector<{vartype}>* {name}Ptr_{{&{name}}};'.format(vartype = self.vartype(), name = self.name))
+
     def write_allocate(self, out, context, use_std_vector = False):
         # context must be datastore
         if use_std_vector:
-            out.writeline('{name} = new std::vector<{vartype}>(nmax_);'.format(name = self.name, vartype = self.vartype()))
+            out.writeline('{name}.resize(nmax_);'.format(name = self.name, vartype = self.vartype()))
         else:
             out.writeline('{name} = new {vartype}[nmax_];'.format(name = self.name, vartype = self.vartype()))
 
     def write_deallocate(self, out, context, use_std_vector = False):
         # context must be datastore
         if use_std_vector:
-            out.writeline('delete {name};'.format(name = self.name))
+            out.writeline('{name}.resize(0);'.format(name = self.name))
         else:
             out.writeline('delete [] {name};'.format(name = self.name))
-
-        out.writeline('{name} = 0;'.format(name = self.name))
+            out.writeline('{name} = 0;'.format(name = self.name))
 
     def write_set_status(self, out, context):
         if '!' in self.modifier:
@@ -153,7 +156,9 @@ class Branch(Definition):
         elif context == 'TreeEntry':
             namevar = '""'
 
-        if (context == 'datastore' and not use_std_vector) or self.is_array():
+        if context == 'datastore' and use_std_vector:
+            ptr = '&' + self.name + 'Ptr_';
+        elif context == 'datastore' or self.is_array():
             ptr = self.name
         else:
             ptr = '&' + self.name
@@ -165,7 +170,7 @@ class Branch(Definition):
             return
 
         if context == 'datastore' and use_std_vector:
-            out.writeline('panda::utils::book(_tree, _name, "{name}", "std::vector<{vartype}>", &{name}, _branches);'.format(vartype = self.vartype(), name = self.name))
+            out.writeline('panda::utils::book(_tree, _name, "{name}", "std::vector<{vartype}>", &{name}Ptr_, _branches);'.format(vartype = self.vartype(), name = self.name))
             return
 
         if self.is_array():

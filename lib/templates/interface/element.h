@@ -3,6 +3,10 @@
 
 #include "Constants.h"
 @INCLUDES@
+@IF[PHYS_PARENT]@
+@ELSE@
+#include "../interface/SizeBranchName.h"
+@ENDIF@
 #include "../../Framework/interface/Array.h"
 #include "../../Framework/interface/Collection.h"
 #include "../../Framework/interface/Ref.h"
@@ -28,7 +32,12 @@ namespace @NAMESPACE@ {
       void setAddress(TTree&, TString const&, panda::utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) override;
       void book(TTree&, TString const&, panda::utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) override;
       void releaseTree(TTree&, TString const&) override;
-      void resizeVectors_(UInt_t) override;      
+      void resizeVectors_(UInt_t) override;
+
+      @IF[PHYS_PARENT]@
+      @ELSE@
+      typedef @NAMESPACE@::SizeBranchName size_name_type;
+      @ENDIF@
     };
 
     typedef panda::Array<@NAME@> array_type;

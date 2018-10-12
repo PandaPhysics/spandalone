@@ -21,7 +21,6 @@ namespace @NAMESPACE@ {
     @NAME@(char const* name = "");
     @NAME@(@NAME@ const&);
     @ENDIF@
-    @NAME@(datastore&, UInt_t idx);
     ~@NAME@();
     @NAME@& operator=(@NAME@ const&);
 
