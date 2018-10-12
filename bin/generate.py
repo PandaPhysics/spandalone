@@ -54,6 +54,8 @@ if os.path.exists(args.outdir + '/../../.SCRAM/Environment'):
             generator.write_linkdef()
 else:
     # running in a standalone environment
+    shutil.rmtree(args.outdir + '/Framework')
+    os.unlink(args.outdir + '/Makefile')
     shutil.copytree(os.path.dirname(__file__) + '/../Framework', args.outdir + '/Framework')
     shutil.copyfile(os.path.dirname(__file__) + '/../Makefile', args.outdir + '/Makefile')
 

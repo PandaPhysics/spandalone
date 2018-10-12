@@ -61,7 +61,7 @@ namespace @NAMESPACE@ {
   protected:
     @PROTECTED_MEMBERS@
 
-    @NAME@(ArrayBase*);
+    @NAME@(panda::ArrayBase*);
 
     void doBook_(TTree&, TString const&, panda::utils::BranchList const& = {"*"}) override;
     void doInit_() override;

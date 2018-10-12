@@ -54,9 +54,9 @@ namespace @NAMESPACE@ {
   @NAME@::datastore::getStatus(TTree& _tree, TString const& _name) const
   {
     @IF[PHYS_PARENT]@
-    panda::utils::BranchList(@PARENT@::datastore::getStatus(_tree, _name));
+    panda::utils::BranchList blist(@PARENT@::datastore::getStatus(_tree, _name));
     @ELSE@
-    panda::utils::BranchList;
+    panda::utils::BranchList blist;
     @ENDIF@
 
     @GET_STATUS@
@@ -135,7 +135,7 @@ namespace @NAMESPACE@ {
   }
 
   /*protected*/
-  @NAME@::@NAME@(ArrayBase* _array) :
+  @NAME@::@NAME@(panda::ArrayBase* _array) :
     @INITIALIZERS_PRIVATE@
   {
     @DEFAULT_CTOR@

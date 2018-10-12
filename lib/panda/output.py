@@ -50,6 +50,7 @@ class Output(object):
 
                     if '@ELSE@' in line:
                         switch = not switch
+                        continue
 
                     if switch:
                         content += line

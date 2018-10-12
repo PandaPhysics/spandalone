@@ -97,7 +97,11 @@ class Generator(object):
         
                 if line.startswith('<require '):
                     continue
-        
+
+                if line.startswith('<std_vector_branches'):
+                    self.std_vector_branches = eval(line.strip().replace('<std_vector_branches ', '').replace('>', ''))
+                    continue
+
                 if line.startswith('%'):
                     #comment line
                     continue
@@ -262,11 +266,16 @@ class Generator(object):
         objdef.write_inherited_protected_members(protected_members)
         objdef.write_protected_members(protected_members)
 
+        if self.namespace != 'panda' and objdef.parent in ('Element', 'Singlet'):
+            parent = 'panda::' + objdef.parent
+        else:
+            parent = objdef.parent
+
         replacements = {
             'NAMESPACE': self.namespace,
             'NAME': objdef.name,
             'INSTANTIABLE': objdef.instantiable,
-            'PARENT': objdef.parent,
+            'PARENT': parent,
             'INCLUDES': header_includes,
             'ENUMS': enums,
             'CONSTANTS': constants,
@@ -326,7 +335,7 @@ class Generator(object):
             initializers_standard = BufferOutput()
             objdef.write_initializers_element(initializers_standard)
             initializers_private = BufferOutput()
-            objdef.write_initializers_default(initializers_private, element_private = True)
+            objdef.write_initializers_private(initializers_private)
 
             standard_ctor = BufferOutput()
             dsbook = BufferOutput()
@@ -344,23 +353,28 @@ class Generator(object):
             branch.write_assign(assignment, context = context)
             branch.write_set_status(set_status, context = dscontext)
             branch.write_get_status(get_status, context = dscontext)
-            branch.write_set_address(set_address, context = dscontext, self.std_vector_branches)
+            branch.write_set_address(set_address, context = dscontext, use_std_vector = self.std_vector_branches)
             branch.write_book(book, context = context)
             branch.write_init(init, context = context)
             branch.write_dump(dump)
 
             if not objdef.is_singlet():
                 branch.write_standard_ctor(standard_ctor, context = context)
-                branch.write_allocate(allocate, context = dscontext, self.std_vector_branches)
-                branch.write_deallocate(deallocate, context = dscontext, self.std_vector_branches)
-                branch.write_book(dsbook, context = dscontext, self.std_vector_branches)
+                branch.write_allocate(allocate, context = dscontext, use_std_vector = self.std_vector_branches)
+                branch.write_deallocate(deallocate, context = dscontext, use_std_vector = self.std_vector_branches)
+                branch.write_book(dsbook, context = dscontext, use_std_vector = self.std_vector_branches)
                 branch.write_release_tree(release_tree, context = dscontext)
                 branch.write_resize_vectors(resize_vectors, context = dscontext)
+
+        if self.namespace != 'panda' and objdef.parent in ('Element', 'Singlet'):
+            parent = 'panda::' + objdef.parent
+        else:
+            parent = objdef.parent
 
         replacements = {
             'NAMESPACE': self.namespace,
             'NAME': objdef.name,
-            'PARENT': objdef.parent,
+            'PARENT': parent,
             'PHYS_PARENT': (objdef.parent not in ('Singlet', 'Element')),
             'INSTANTIABLE': objdef.instantiable,
             'INITIALIZERS_DEFAULT': initializers_default,

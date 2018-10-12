@@ -68,6 +68,9 @@ class Branch(Definition):
 
         return res
 
+    def arrdef_text(self, begin = None, end = None):
+        return ''.join('[%s]' % a for a in self.arrdef[begin:end])
+
     def typename(self):
         return Branch.TYPE_MAP[self.type]
 
@@ -162,7 +165,7 @@ class Branch(Definition):
             return
 
         if context == 'datastore' and use_std_vector:
-            out.writeline('panda::utils::book(_tree, _name, "{name}", {vartype}, &{name}, _branches);'.format(vartype = self.vartype(), name = self.name))
+            out.writeline('panda::utils::book(_tree, _name, "{name}", "std::vector<{vartype}>", &{name}, _branches);'.format(vartype = self.vartype(), name = self.name))
             return
 
         if self.is_array():

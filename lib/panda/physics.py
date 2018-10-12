@@ -170,7 +170,7 @@ class PhysicsObject(Definition, Object):
 
             branch.write_decl(out, context = context)
 
-    def write_initializers_default(self, out, element_private = False):
+    def write_initializers_default(self, out):
         if not self.instantiable:
             return
 
@@ -179,13 +179,18 @@ class PhysicsObject(Definition, Object):
             initializers = ['{parent}(_name)'.format(parent = self.parent)]
         else:
             context = 'Element'
-            if element_private:
-                initializers = ['{parent}(_array)'.format(parent = self.parent)]
-            else:
-                initializers = ['{parent}(new {name}Array(1, _name))'.format(parent = self.parent, name = self.name)]
+            initializers = ['{parent}(new {name}Array(1, _name))'.format(parent = self.parent, name = self.name)]
 
         for branch in self.branches:
             branch.init_default(initializers, context = context)
+
+        out.writelines(initializers, ',')
+
+    def write_initializers_private(self, out):
+        initializers = ['{parent}(_array)'.format(parent = self.parent)]
+
+        for branch in self.branches:
+            branch.init_default(initializers, context = 'Element')
 
         out.writelines(initializers, ',')
 
