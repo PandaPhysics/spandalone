@@ -57,18 +57,23 @@ class ObjBranch(Definition):
                           + self.comment)
 
     def write_set_status(self, out):
+        raise RuntimeError('Not used')
         out.writeline('{name}.setStatus(_tree, _branches.subList("{name}"));'.format(name = self.name))
 
     def write_get_status(self, out):
+        raise RuntimeError('Not used')
         out.writeline('blist += {name}.getStatus(_tree);'.format(name = self.name))
 
     def write_set_address(self, out):
+        raise RuntimeError('Not used')
         out.writeline('{name}.setAddress(_tree, _branches.subList("{name}"), _setStatus);'.format(name = self.name))
 
     def write_book(self, out):
+        raise RuntimeError('Not used')
         out.writeline('{name}.book(_tree, _branches.subList("{name}"));'.format(name = self.name))
 
     def write_release_tree(self, out):
+        raise RuntimeError('Not used')
         out.writeline('{name}.releaseTree(_tree);'.format(name = self.name))
 
     def cpyctor(self):
