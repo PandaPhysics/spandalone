@@ -3,6 +3,7 @@
 
 #include "TChain.h"
 #include "TChainElement.h"
+#include "TList.h"
 
 #include <stdexcept>
 
@@ -78,7 +79,7 @@ panda::utils::setAddress(TTree& _tree, BranchName const& _bName, void* _bPtr, Br
         else if (returnCode == -1) {
           std::cout << "Branch " << fullName.Data() << " does not exist" << std::endl;
         }
-        else if (_bName.vetoed(_bList)) {
+        else if (_bList.vetoes(_bName)) {
           std::cout << "Branch " << fullName.Data() << " was vetoed" << std::endl;
         }
       }

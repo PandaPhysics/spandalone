@@ -2,6 +2,7 @@
 #define PandaTree_Interface_IOUtils_h
 
 #include "BranchName.h"
+#include "BranchList.h"
 
 #include "TString.h"
 #include "TTree.h"
@@ -14,6 +15,8 @@ namespace panda {
   class ReaderObject;
 
   namespace utils {
+    class BranchName;
+    class BranchList;
 
     //! Check status of a branch
     /*!

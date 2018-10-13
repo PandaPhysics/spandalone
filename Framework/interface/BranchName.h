@@ -22,6 +22,7 @@ namespace panda {
       typedef std::pair<TString, TString> core_type;
 
       BranchName() {}
+      BranchName(bool _isVeto) : isVeto_(_isVeto) {}
       BranchName(BranchName const& src) : core_type(src), isVeto_(src.isVeto_) {}
       BranchName& operator=(BranchName const&);
 
@@ -54,11 +55,11 @@ namespace panda {
 
     template<class T>
     BranchNameImpl<T>::BranchNameImpl(TString const& _name, TString const& _bname/* = ""*/, bool _isVeto/* = false*/) :
-      isVeto_(_isVeto)
+      BranchName(_isVeto)
     {
       TString name(_name);
 
-      if (name(0) == "!") {
+      if (name(0) == '!') {
         isVeto_ = true; // regardless of _isVeto
         name = name(1, _name.Length());
       }
@@ -68,6 +69,13 @@ namespace panda {
       if (this->second == "")
         this->second = _bname;
     }
+
+    class NullNameSyntax {
+    public:
+      static TString generate(BranchName const&) { return ""; }
+      static std::pair<TString, TString> parse(TString const&) { return std::pair<TString, TString>("", ""); }
+    };
+
   }
 }
 

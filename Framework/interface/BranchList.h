@@ -1,42 +1,61 @@
 #ifndef PandaTree_Interface_BranchList_h
 #define PandaTree_Interface_BranchList_h
 
-#include "BranchName.h"
-
 #include "TString.h"
 #include "TTree.h"
 
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <functional>
 
 namespace panda {
   namespace utils {
+    class BranchName;
+    class NullNameSyntax;
+    template<class T> class BranchListImpl;
+
+    typedef BranchListImpl<NullNameSyntax> BranchSubList;
 
     //! List of branch names
     /*!
-     * Basically a vector of BranchNames with a few facilities.
+     * This base class is mostly defined for accessors returning refernces,
+     * but a special-case construction with {"*"} or {"!*"} is defined.
      */
     class BranchList {
     public:
-      //! Return sublist of branches that starts with the objName.
-      virtual std::unique_ptr<BranchList> subList(TString const& objName) const = 0;
+      typedef std::reference_wrapper<BranchName> ref_wrapper;
+      typedef std::vector<ref_wrapper> ref_vector;
+      typedef BranchName& reference;
+      typedef BranchName const& const_reference;
+      typedef ref_vector::iterator iterator;
+      typedef ref_vector::const_iterator const_iterator;
+
+      BranchList(std::initializer_list<TString>);
+
+      reference at(unsigned i) { return nameRefs_.at(i); }
+      const_reference at(unsigned i) const { return nameRefs_.at(i); }
+      iterator begin() { return nameRefs_.begin(); }
+      const_iterator begin() const { nameRefs_.begin(); }
+      iterator end() { nameRefs_.end(); }
+      const_iterator end() const { nameRefs_.end(); }
 
       //! Returns true if any of the branch in the list is not vetoed in my list.
-      virtual bool matchesAny(BranchList const&) const = 0;
-
+      bool matchesAny(BranchList const&) const;
       //! Returns true if the name is included and not vetoed
       /*!
        * Does not take the veto on the parent object into account. Simply asks the question
        * "is the name in the given list and not vetoed in the list?"
        */
-      virtual bool includes(BranchName const&) const = 0;
+      bool includes(BranchName const&) const;
       //! Returns true if the name is included and vetoed?
       /*!
        * Does not take the veto on the parent object into account. Simply asks the question
        * "is the name in the given list and vetoed in the list?"
        */
-      virtual bool vetoes(BranchName const&) const = 0;
+      bool vetoes(BranchName const&) const;
+      //! Return a sublist of branches that starts with the objName.
+      BranchSubList subList(TString const& objName) const;
 
       //! Set the verbosity level
       /*!
@@ -49,7 +68,9 @@ namespace panda {
       //! Get the verbosity level
       int getVerbosity() const { return verbosity_; }
 
-    private:
+    protected:
+      ref_vector nameRefs_;
+      BranchName matchAll_;
       int verbosity_{0};
     };
 
@@ -59,75 +80,57 @@ namespace panda {
       typedef T NameSyntax;
       typedef BranchNameImpl<T> name_type;
       typedef BranchListImpl<T> self_type;
-      typedef std::vector<name_type> list_type;
 
-      BranchListImpl(std::initializer_list<list_type::value_type>, const list_type::allocator_type& = list_type::allocator_type());
+      BranchListImpl(std::initializer_list<TString>);
 
-      std::unique_ptr<BranchList> subList(TString const& objName) const final;
-      bool matchesAny(BranchList const&) const final;
-      bool includes(BranchName const&) const final;
-      bool vetoes(BranchName const&) const final;
+      void clear() { nameRefs_.clear(); names_.clear(); }
 
-      //! Size of the list
-      unsigned size() const { return list_.size(); }
-      //! Element access
-      name_type& at(unsigned i) { return list_.at(i); }
-      name_type const& at(unsigned i) const { return list_.at(i); }
-      name_type& operator[](unsigned i) { return list_[i]; }
-      name_type const& operator[](unsigned i) const { return list_[i]; }
+      //! Extend the list
+      template<class... Args>
+      void emplace_back(Args&&... args);
       //! Extend the list
       self_type& operator+=(self_type const&);
       //! Create a branchlist object from the branches in the tree
       static self_type makeList(TTree&);
 
     private:
-      list_type list_;
+      std::vector<name_type> names_;
     };
 
     template<class T>
-    BranchListImpl<T>::BranchListImpl(std::initializer_list<list_type::value_type> il, const list_type::allocator_type& alloc = list_type::allocator_type()) :
-      list_(il, alloc)
+    BranchListImpl<T>::BranchListImpl(std::initializer_list<TString> il)
     {
+      for (auto& name : il)
+        names_.emplace_back(name);
+
+      for (auto& name : names_)
+        nameRefs_.emplace_back(name);
     }
 
     template<class T>
-    std::unique_ptr<BranchList>
-    BranchListImpl<T>::subList(TString const& _objName) const
+    template<class... Args>
+    void
+    BranchListImpl<T>::emplace_back(Args&&... args)
     {
-      BranchListImpl<T>* sublist(new BranchListImpl<T>());
-      sublist->setVerbosity(getVerbosity());
-    
-      // loop over my branch names
-      for (auto& b : this->list_) {
-        // if the object name is not * and not objName, skip
-        if (b.first == "*")
-          sublist.emplace_back(_objName, b.second);
-        else if (b.first == _objName)
-          sublist.emplace_back(b)
-      }
-    
-      return std::unique_ptr<BranchList>(sublist);
-    }
-
-    template<class T>
-    bool
-    BranchListImpl<T>::matchesAny(BranchList const& _list) const
-    {
-      // loop over given branch names
-      for (auto& b : _list) {
-        // find a non-vetoed branch that is in my list
-        if (!b.isVeto() && b.in(*this))
-          return true;
-      }
-
-      return false;
+      names_.emplace_back(&args...);
+      
+      // names_ may have been reallocated
+      nameRefs_.clear();
+      for (auto& name : names_)
+        nameRefs_.emplace_back(name);
     }
 
     template<class T>
     BranchListImpl<T>&
     BranchListImpl<T>::operator+=(BranchListImpl<T> const& _rhs)
     {
-      this->list_.insert(this->list_.end(), _rhs.list_.begin(), _rhs.list_.end());
+      names_.insert(names_.end(), _rhs.names_.begin(), _rhs.names_.end());
+      
+      // names_ may have been reallocated
+      nameRefs_.clear();
+      for (auto& name : names_)
+        nameRefs_.emplace_back(name);
+
       return *this;
     }
 
@@ -140,53 +143,15 @@ namespace panda {
     
       auto* branches(_tree.GetListOfBranches());
       for (auto* br : *branches)
-        blist.list_.emplace_back(br->GetName());
+        blist.emplace_back(br->GetName());
     
       return blist;
-    }
-
-    template<class T>
-    bool
-    BranchNameListImpl<T>::includes(BranchName const& _name) const
-    {
-      // last match determines the result
-    
-      bool included(false);
-      for (auto& bname : this->list_) {
-        if (_name.match(bname))
-          included = !bname.isVeto();
-      }
-      return included;
-    }
-
-    template<class T>
-    bool
-    BranchNameListImpl<T>::vetoes(BranchName const& _name) const
-    {
-      // last match determines the result
-    
-      bool vetoed(false);
-      for (auto& bname : this->list_) {
-        if (_name.match(bname))
-          vetoed = bname.isVeto();
-      }
-      return vetoed;
     }
 
   }
 }
 
 //! Print BranchList
-template<class T>
-std::ostream& operator<<(std::ostream& _os, panda::utils::BranchListImpl<T> const& _bl)
-{
-  for (unsigned iN(0); iN != _bl.size(); ++iN) {
-    _os << _bl[iN].toString();
-    if (iN != _bl.size() - 1)
-      _os << " ";
-  }
-
-  return _os;
-}
+std::ostream& operator<<(std::ostream&, panda::utils::BranchList const&);
 
 #endif
