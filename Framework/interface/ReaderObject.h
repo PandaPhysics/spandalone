@@ -2,7 +2,6 @@
 #define PandaTree_Framework_ReaderObject_h
 
 #include "Object.h"
-#include "IOUtils.h"
 
 namespace panda {
 

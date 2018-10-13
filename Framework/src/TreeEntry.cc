@@ -1,5 +1,4 @@
 #include "../interface/TreeEntry.h"
-#include "../interface/CollectionBase.h"
 
 void
 panda::TreeEntry::setStatus(TTree& _tree, utils::BranchList const& _branches)
@@ -10,32 +9,32 @@ panda::TreeEntry::setStatus(TTree& _tree, utils::BranchList const& _branches)
   doSetStatus_(_tree, _branches);
 }
 
-panda::utils::BranchList
+std::unique_ptr<panda::utils::BranchList>
 panda::TreeEntry::getStatus(TTree& _tree) const
 {
-  utils::BranchList blist;
+  utils::BranchList* blist(new utils::BranchList());
 
   for (auto* obj : objects_)
-    blist += obj->getStatus(_tree);
+    (*blist) += obj->getStatus(_tree);
 
-  blist += doGetStatus_(_tree);
+  (*blist) += doGetStatus_(_tree);
 
-  return blist;
+  return std::unique_ptr<panda::utils::BranchList>(blist);
 }
 
-panda::utils::BranchList
+std::unique_ptr<panda::utils::BranchList>
 panda::TreeEntry::getBranchNames(Bool_t/* = kTRUE*/, Bool_t _direct/* = kFALSE*/) const
 {
-  utils::BranchList blist;
+  utils::BranchList* blist(new utils::BranchList());
 
   if (!_direct) {
     for (auto* obj : objects_)
-      blist += obj->getBranchNames(true);
+      (*blist) += obj->getBranchNames(true);
   }
 
-  blist += doGetBranchNames_();
+  (*blist) += doGetBranchNames_();
 
-  return blist;
+  return std::unique_ptr<panda::utils::BranchList>(blist);
 }
 
 UInt_t

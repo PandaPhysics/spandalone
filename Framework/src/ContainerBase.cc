@@ -1,8 +1,5 @@
 #include "../interface/ContainerBase.h"
 
-#include <algorithm>
-#include <stdexcept>
-
 void
 panda::ContainerBase::print(std::ostream& _out/* = std::cout*/, UInt_t _level/* = 1*/) const
 {

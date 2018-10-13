@@ -20,8 +20,8 @@ namespace panda {
     ~CollectionBase();
 
     void setStatus(TTree&, utils::BranchList const& blist) final;
-    utils::BranchList getStatus(TTree&) const final;
-    utils::BranchList getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
+    std::unique_ptr<utils::BranchList> getStatus(TTree&) const final;
+    std::unique_ptr<utils::BranchList> getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
     UInt_t setAddress(TTree&, utils::BranchList const& blist = {"*"}, Bool_t setStatus = kTRUE) final;
     void book(TTree&, utils::BranchList const& blist = {"*"}) final;
     using ReaderObject::getEntry;

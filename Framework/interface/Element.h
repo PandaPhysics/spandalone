@@ -2,7 +2,6 @@
 #define PandaTree_Framework_Element_h
 
 #include "Object.h"
-#include "IOUtils.h"
 
 #include <map>
 
@@ -49,8 +48,8 @@ namespace panda {
       virtual void allocate(UInt_t n) { nmax_ = n; }
       virtual void deallocate() {}
       virtual void setStatus(TTree&, TString const&, utils::BranchList const&) {}
-      virtual utils::BranchList getStatus(TTree&, TString const&) const { return utils::BranchList(); }
-      virtual utils::BranchList getBranchNames(TString const& = "") const { return utils::BranchList(); }
+      virtual std::unique_ptr<utils::BranchList> getStatus(TTree&, TString const&) const { return std::make_unique<utils::BranchList>(); }
+      virtual std::unique_ptr<utils::BranchList> getBranchNames(TString const& = "") const { return std::make_unique<utils::BranchList>(); }
       virtual void setAddress(TTree&, TString const&, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) {}
       virtual void book(TTree&, TString const&, utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) {}
       virtual void releaseTree(TTree&, TString const&) {}
@@ -85,8 +84,8 @@ namespace panda {
     static char const* typeName() { return "Element"; }
 
     void setStatus(TTree&, utils::BranchList const& blist) final;
-    utils::BranchList getStatus(TTree&) const final;
-    utils::BranchList getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
+    std::unique_ptr<utils::BranchList> getStatus(TTree&) const final;
+    std::unique_ptr<utils::BranchList> getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
     UInt_t setAddress(TTree&, utils::BranchList const& blist = {"*"}, Bool_t setStatus = kTRUE) final;
     void book(TTree&, utils::BranchList const& blist = {"*"}) final;
     Int_t getEntry(TTree& tree, Long64_t entry, Bool_t localEntry = kFALSE) final;

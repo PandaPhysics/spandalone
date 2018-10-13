@@ -39,14 +39,14 @@ panda::Element::setStatus(TTree& _tree, utils::BranchList const& _branches)
   array.getData().setStatus(_tree, array.getName(), _branches);
 }
 
-panda::utils::BranchList
+std::unique_ptr<panda::utils::BranchList>
 panda::Element::getStatus(TTree& _tree) const
 {
   auto& array(gStore.getArray(this));
   return array.getData().getStatus(_tree, array.getName());
 }
 
-panda::utils::BranchList
+std::unique_ptr<panda::utils::BranchList>
 panda::Element::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = kFALSE*/) const
 {
   auto& array(gStore.getArray(this));
