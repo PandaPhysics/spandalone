@@ -1,12 +1,12 @@
-#include "../../Framework/interface/Object.h"
-#include "../../Framework/interface/ReaderObject.h"
-#include "../../Framework/interface/Singlet.h"
-#include "../../Framework/interface/Element.h"
-#include "../../Framework/interface/ContainerBase.h"
-#include "../../Framework/interface/ArrayBase.h"
-#include "../../Framework/interface/CollectionBase.h"
-#include "../../Framework/interface/TreeEntry.h"
-#include "../../Framework/interface/RRNG.h"
+#include "@OUTDIR@/Framework/interface/Object.h"
+#include "@OUTDIR@/Framework/interface/ReaderObject.h"
+#include "@OUTDIR@/Framework/interface/Singlet.h"
+#include "@OUTDIR@/Framework/interface/Element.h"
+#include "@OUTDIR@/Framework/interface/ContainerBase.h"
+#include "@OUTDIR@/Framework/interface/ArrayBase.h"
+#include "@OUTDIR@/Framework/interface/CollectionBase.h"
+#include "@OUTDIR@/Framework/interface/TreeEntry.h"
+#include "@OUTDIR@/Framework/interface/RRNG.h"
 @INCLUDES@
 
 #ifdef __CLING__

@@ -37,6 +37,8 @@ generator.initialize()
 
 generator.parse()
 
+generator.write_cpp()
+
 if os.path.exists(args.outdir + '/../../.SCRAM/Environment'):
     # running in a CMSSW environment?
     with open(args.outdir + '/../../.SCRAM/Environment') as environment:
@@ -59,9 +61,7 @@ else:
 
     shutil.copytree(os.path.dirname(__file__) + '/../Framework', args.outdir + '/Framework')
     with open(os.path.dirname(__file__) + '/../Makefile') as source:
-        with open(args.outdir + '/Makefile', 'w') as out:
+        with open(args.outdir + '/' + args.namespace + '/Makefile', 'w') as out:
             out.write(source.read().replace('@NAMESPACE@', args.namespace))
-
-generator.write_cpp()
 
 #relval.write_header(trees, common.PACKDIR + '/RelVal/interface/EnumerateBranches.h')

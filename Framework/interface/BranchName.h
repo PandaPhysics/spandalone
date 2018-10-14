@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <iostream>
+#include <cstring>
 
 namespace panda {
   namespace utils {
@@ -64,18 +65,21 @@ namespace panda {
         name = name(1, name.Length());
       }
 
-      auto parsed(NameSyntax::parse(name));
-      if (parsed.first.Length() == 0) {
-        // maybe this was a size branch?
-        parsed = SizeNameSyntax::parse(name);
-      }
-      if (parsed.first.Length() == 0)
-        throw std::runtime_error(TString::Format("Invalid branch name %s", name.Data()).Data());
-
-      core_type::operator=(parsed);
-
-      if (this->second == "")
+      if (_bname && std::strlen(_bname) != 0) {
+        this->first = _name;
         this->second = _bname;
+      }
+      else {
+        auto parsed(NameSyntax::parse(name));
+        if (parsed.first.Length() == 0) {
+          // maybe this was a size branch?
+          parsed = SizeNameSyntax::parse(name);
+        }
+        if (parsed.first.Length() == 0)
+          throw std::runtime_error(TString::Format("Invalid branch name %s", name.Data()).Data());
+
+        core_type::operator=(parsed);
+      }
     }
 
     template<class T, class S/* = T*/>

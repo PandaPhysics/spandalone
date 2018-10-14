@@ -1,26 +1,31 @@
-target=libpanda.so
-fwk_src=$(wildcard Framework/src/*.cc)
-src=$(filter-out @NAMESPACE@/src/dict.cc,$(wildcard @NAMESPACE@/src/*.cc))
-fwk_obj=$(patsubst Framework/src/%.cc,obj/Framework/%.o,$(fwk_src))
-obj=$(patsubst @NAMESPACE@/src/%.cc,obj/@NAMESPACE@/%.o,$(src))
+target=lib/lib@NAMESPACE@.so
+fwk_src=$(wildcard ../Framework/src/*.cc)
+fwk_obj=$(patsubst ../Framework/src/%.cc,../Framework/obj/%.o,$(fwk_src))
+fwk_inc=$(patsubst ../Framework/src/%.cc,../Framework/interface/%.h,$(fwk_src))
+src=$(wildcard src/*.cc)
+obj=$(patsubst src/%.cc,obj/%.o,$(src))
+inc=$(patsubst src/%.cc,interface/%.h,$(src))
 
-$(target): $(obj) $(fwk_obj) obj/@NAMESPACE@/dict.o
+$(target): $(obj) $(fwk_obj) obj/dict.o
+	mkdir -p lib
 	g++ -std=c++17 -O2 -fPIC -shared $(shell root-config --libs) -o $@ $^
 
-obj/@NAMESPACE@/dict.o: $(patsubst %.cc,%.h,$(subst /src/,/interface/,$(src))) @NAMESPACE@/src/LinkDef.h
-	mkdir -p obj/@NAMESPACE@
-	rootcling -f @NAMESPACE@/src/dict.cc $^
-	g++ -std=c++17 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) -I$(shell pwd) @NAMESPACE@/src/dict.cc
+obj/dict.o: $(inc) $(fwk_inc) src/LinkDef.h
+	mkdir -p obj
+	rootcling -f obj/dict.cc $^
+	g++ -std=c++17 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) -I$(shell pwd) obj/dict.cc
+	mkdir -p lib
+	mv obj/dict_rdict.pcm lib/
 
-obj/Framework/%.o: Framework/src/%.cc Framework/interface/%.h
-	mkdir -p obj/Framework
+../Framework/obj/%.o: ../Framework/src/%.cc ../Framework/interface/%.h
+	mkdir -p ../Framework/obj
 	g++ -std=c++17 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $<
 
-obj/@NAMESPACE@/%.o: @NAMESPACE@/src/%.cc @NAMESPACE@/interface/%.h
-	mkdir -p obj/@NAMESPACE@
+obj/%.o: src/%.cc interface/%.h
+	mkdir -p obj
 	g++ -std=c++17 -O2 -fPIC -c -o $@ -I$(shell root-config --incdir) $<
 
 .PHONY: clean
 
 clean:
-	rm -rf */src/dict.cc obj $(target)
+	rm -rf obj lib ../Framework/obj ../Framework/lib

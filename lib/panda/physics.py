@@ -91,12 +91,11 @@ class PhysicsObject(Definition, Object):
             if ancestor is self:
                 break
 
-            out.writeline('/* {name}'.format(name = ancestor.name))
-
-            for branch in ancestor.branches:
-                branch.write_decl(out, context = 'datastore', use_std_vector = use_std_vector)
-
-            out.writeline('*/')
+            if len(ancestor.branches) != 0:
+                out.writeline('/* {name}'.format(name = ancestor.name))
+                for branch in ancestor.branches:
+                    branch.write_decl(out, context = 'datastore', use_std_vector = use_std_vector)
+                out.writeline('*/')
 
     def write_datastore_members(self, out, use_std_vector = False):
         for branch in self.branches:
@@ -120,15 +119,18 @@ class PhysicsObject(Definition, Object):
             if ancestor is self:
                 break
 
-            out.writeline('/* {name}'.format(name = ancestor.name))
+            branches = []
 
             for branch in ancestor.branches:
                 if not hasattr(branch, 'refname') and branch.name.endswith('_'):
                     continue
+                branches.append(branch)
 
-                branch.write_decl(out, context = context)
-
-            out.writeline('*/')
+            if len(branches) != 0:
+                out.writeline('/* {name}'.format(name = ancestor.name))
+                for branch in branches:
+                    branch.write_decl(out, context = context)
+                out.writeline('*/')
 
     def write_public_members(self, out):
         if self.is_singlet():
@@ -154,15 +156,17 @@ class PhysicsObject(Definition, Object):
             if ancestor is self:
                 break
 
-            out.writeline('/* {name}'.format(name = ancestor.name))
-
+            branches = []
             for branch in ancestor.branches:
                 if hasattr(branch, 'refname') or not branch.name.endswith('_'):
                     continue
+                branches.append(branch)
 
-                branch.write_decl(out, context = context)
-
-            out.writeline('*/')
+            if len(branches) != 0:
+                out.writeline('/* {name}'.format(name = ancestor.name))
+                for branch in branches:
+                    branch.write_decl(out, context = context)
+                out.writeline('*/')
 
     def write_protected_members(self, out):
         if self.is_singlet():

@@ -304,18 +304,23 @@ class Generator(object):
 
         if not objdef.is_singlet():
             buf = BufferOutput()
+            if self.std_vector_branches:
+                prot = BufferOutput()
+                objdef.write_datastore_vectorptrs(prot)
+
+                if len(prot.buffer) != 0:
+                    buf.indent -= 1
+                    buf.writeline('protected:')
+                    buf.indent += 1
+                    for _, line in prot.buffer:
+                        buf.writeline(line)
+                    buf.newline()
+                    buf.indent -= 1
+                    buf.writeline('public:')
+                    buf.indent += 1
+
             objdef.write_datastore_inherited_members(buf, self.std_vector_branches)
             objdef.write_datastore_members(buf, self.std_vector_branches)
-
-            if self.std_vector_branches:
-                buf.indent -= 1
-                buf.writeline('protected:')
-                buf.indent += 1
-                objdef.write_datastore_vectorptrs(buf)
-                buf.newline()
-                buf.indent -= 1
-                buf.writeline('public:')
-                buf.indent += 1
 
             replacements['DATASTORE_MEMBERS'] = buf
 
@@ -614,9 +619,9 @@ class Generator(object):
 
         includes = BufferOutput()
         for objdef in self.phobjects:
-            includes.writeline('#include "../interface/{name}.h"'.format(name = objdef.name))
+            includes.writeline('#include "{outdir}/{namespace}/interface/{name}.h"'.format(outdir = os.path.realpath(self.outdir), namespace = self.namespace, name = objdef.name))
         for tree in self.trees:
-            includes.writeline('#include "../interface/{name}.h"'.format(name = tree.name))
+            includes.writeline('#include "{outdir}/{namespace}/interface/{name}.h"'.format(outdir = os.path.realpath(self.outdir), namespace = self.namespace, name = tree.name))
         
         enums = BufferOutput()
         for enum in self.enums:
@@ -648,6 +653,7 @@ class Generator(object):
             trees.writeline('#pragma link C++ class @NAMESPACE@::{name};'.format(name = tree.name))
 
         replacements = {
+            'OUTDIR': os.path.realpath(self.outdir),
             'NAMESPACE': self.namespace,
             'CUSTOM_NAMESPACE': (self.namespace != 'panda'),
             'INCLUDES': includes,

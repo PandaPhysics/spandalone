@@ -1,17 +1,20 @@
 #include "../interface/@NAME@.h"
 #include "../../Framework/interface/IOUtils.h"
 
+namespace panda {
+  /*static*/
+  template<>
+  @NAMESPACE@::BranchList const Collection<@NAMESPACE@::@NAME@>::branchNames{std::initializer_list<TString>{@BNAMES_WITH_SIZE@}};
+}
+
 namespace @NAMESPACE@ {
 
   @ENUM_STRS@
   @CONSTANTS@
 
   /*static*/
-  BranchList const @NAME@::branchNames{{@BNAMES@}};
-  /*static*/
-  template<>
-  BranchList const @NAME@Collection::branchNames{{@BNAMES_WITH_SIZE@}};
-  
+  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}};
+ 
   void
   @NAME@::datastore::allocate(UInt_t _nmax)
   {

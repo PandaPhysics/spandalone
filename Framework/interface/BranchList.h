@@ -109,6 +109,7 @@ namespace panda {
 
       BranchListImpl() {}
       BranchListImpl(std::initializer_list<TString>);
+      BranchListImpl(TString const& obj, std::initializer_list<TString>);
 
       void clear() { nameRefs_.clear(); names_.clear(); }
 
@@ -129,6 +130,16 @@ namespace panda {
     {
       for (auto& name : _il)
         names_.emplace_back(name);
+
+      for (auto& name : names_)
+        nameRefs_.push_back(&name);
+    }
+
+    template<class T, class S/* = T*/>
+    BranchListImpl<T, S>::BranchListImpl(TString const& _obj, std::initializer_list<TString> _il)
+    {
+      for (auto& name : _il)
+        names_.emplace_back(_obj, name);
 
       for (auto& name : names_)
         nameRefs_.push_back(&name);

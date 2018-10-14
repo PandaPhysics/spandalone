@@ -32,21 +32,31 @@ class Output(object):
             self.writeline(lines[-1])
 
     def write_from_template(self, template_path, replacements):
-        template = open(template_path)
+        with open(template_path) as source:
+            lines = source.read().split('\n')
 
+        content = self._generate_from_template(lines, replacements)
+        self.write(content)
+
+    def _generate_from_template(self, lines, replacements):
         content = ''
-        while True:
-            line = template.readline()
+        iline = 0
+        while iline != len(lines):
+            line = lines[iline]
+            iline += 1
             if not line:
-                break
+                content += '\n'
+                continue
 
             matches = re.match('@IF\[(.+)\]@', line.strip())
             if matches:
+                block = []
                 switch_name = matches.group(1)
                 switch = replacements[switch_name]
                 while True:
-                    line = template.readline()
-                    if not line or '@ENDIF@' in line:
+                    line = lines[iline]
+                    iline += 1
+                    if '@ENDIF@' in line:
                         break
 
                     if '@ELSE@' in line:
@@ -54,7 +64,9 @@ class Output(object):
                         continue
 
                     if switch:
-                        content += line
+                        block.append(line)
+
+                content += self._generate_from_template(block, replacements)
 
                 continue
 
@@ -74,7 +86,7 @@ class Output(object):
 
             matches = re.match('( *)\/\* BEGIN CUSTOM (.+) \*\/', line)
             if matches:
-                content += line
+                content += line + '\n'
                 indent = len(matches.group(1)) / 2
                 name = matches.group(2)
                 try:
@@ -84,18 +96,19 @@ class Output(object):
                     from_template = True
 
                 while True:
-                    line = template.readline()
-                    if not line or '/* END CUSTOM */' in line:
+                    line = lines[iline]
+                    iline += 1
+                    if '/* END CUSTOM */' in line:
                         break
 
                     if from_template:
-                        content += line
+                        content += line + '\n'
 
                 content += ('  ' * indent) + '/* END CUSTOM */\n'
                 continue
 
             # otherwise, normal line
-            content += line
+            content += line + '\n'
 
         for key, value in replacements.iteritems():
             if isinstance(value, Output):
@@ -111,7 +124,7 @@ class Output(object):
         # remove >double newlines
         content = re.sub(r'\n\n+', '\n\n', content)
 
-        self.write(content)
+        return content
 
 
 class BufferOutput(Output):

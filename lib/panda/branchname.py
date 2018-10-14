@@ -2,8 +2,8 @@ from panda.base import Definition
 
 class BranchName(Definition):
     def __init__(self, source):
-        self.parse = ''
-        self.generate = ''
+        self.parse = []
+        self.generate = []
 
         reading = ''
         while True:
@@ -21,12 +21,14 @@ class BranchName(Definition):
                 continue
 
             if reading == 'parse':
-                self.parse += line
+                self.parse.append(line.rstrip('\n'))
             elif reading == 'generate':
-                self.generate += line
+                self.generate.append(line.rstrip('\n'))
 
     def write_parse(self, out):
-        out.write(self.parse)
+        for line in self.parse:
+            out.writeline(line)
 
     def write_generate(self, out):
-        out.write(self.generate)
+        for line in self.generate:
+            out.writeline(line)

@@ -4,7 +4,7 @@
 namespace @NAMESPACE@ {
 
   /*static*/
-  BranchList const @NAME@::branchNames{{@BNAMES@}};
+  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}};
 
   @NAME@::@NAME@() :
     @PARENT@()
