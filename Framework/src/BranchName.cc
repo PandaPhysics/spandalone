@@ -23,6 +23,8 @@ panda::utils::BranchName::match(BranchName const& _rhs) const
   if (this->second.Length() == 0 || _rhs.second.Length() == 0)
     return true;
 
+  std::cout << "Checking match between " << toString() << " and " << _rhs.toString() << std::endl;
+
   // case 4. Either this or RHS has a wildcard branch name -> match
   if (this->second == "*" || _rhs.second == "*")
     return true;

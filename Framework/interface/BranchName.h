@@ -100,10 +100,10 @@ namespace panda {
       }
     }
 
-    class NullNameSyntax {
+    class BaseNameSyntax {
     public:
-      static TString generate(TString const&, TString const&) { return ""; }
-      static std::pair<TString, TString> parse(TString const&) { return std::pair<TString, TString>("", ""); }
+      static TString generate(TString const& o, TString const&) { return o; }
+      static std::pair<TString, TString> parse(TString const& n) { return std::pair<TString, TString>(n, ""); }
     };
 
   }

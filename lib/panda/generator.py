@@ -537,13 +537,13 @@ class Generator(object):
         init_objptrs = BufferOutput()
         if len(treedef.objbranches) != 0:
             ptr_list = ', '.join(['&{name}'.format(name = b.name) for b in treedef.objbranches])
-            init_objptrs.writeline('std::vector<panda::Object*> myObjects{{' + ptr_list + '}};')
+            init_objptrs.writeline('std::vector<panda::Object*> myObjects{std::initializer_list<panda::Object*>{' + ptr_list + '}};')
             init_objptrs.writeline('objects_.insert(objects_.end(), myObjects.begin(), myObjects.end());')
 
         init_collptrs = BufferOutput()
         if len(collections) != 0:
             ptr_list = ', '.join(['&{name}'.format(name = b.name) for b in collections])
-            init_collptrs.writeline('std::vector<panda::CollectionBase*> myCollections{{' + ptr_list + '}};')
+            init_collptrs.writeline('std::vector<panda::CollectionBase*> myCollections{std::initializer_list<panda::CollectionBase*>{' + ptr_list + '}};')
             init_collptrs.writeline('collections_.insert(collections_.end(), myCollections.begin(), myCollections.end());')
 
         init_refs = BufferOutput()

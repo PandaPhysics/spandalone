@@ -13,10 +13,10 @@
 
 namespace panda {
   namespace utils {
-    class NullNameSyntax;
+    class BaseNameSyntax;
     template<class T, class S> class BranchListImpl;
 
-    typedef BranchListImpl<NullNameSyntax, NullNameSyntax> BranchSubList;
+    typedef BranchListImpl<BaseNameSyntax, BaseNameSyntax> BranchSubList;
 
     //! List of branch names
     /*!

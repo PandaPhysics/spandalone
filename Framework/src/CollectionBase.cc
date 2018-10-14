@@ -217,9 +217,9 @@ panda::CollectionBase::doSetAddress_(TTree& _tree, utils::BranchList const& _bra
 
   Int_t sizeStatus(0);
   if (_asInput)
-    sizeStatus = utils::setAddress(_tree, getSizeBranchName_(), &sizeIn_, {"size"}, _setStatus);
+    sizeStatus = utils::setAddress(_tree, getSizeBranchName_(), &sizeIn_, {"*"}, _setStatus);
   else
-    sizeStatus = utils::setAddress(_tree, getSizeBranchName_(), &size_, {"size"}, _setStatus);
+    sizeStatus = utils::setAddress(_tree, getSizeBranchName_(), &size_, {"*"}, _setStatus);
 
   if (sizeStatus != 1)
     return;
