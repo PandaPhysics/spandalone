@@ -79,35 +79,31 @@ class GenericBranch(Branch):
             return
 
         if context == 'datastore':
-            namevar = '_name'
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'Singlet':
-            namevar = 'name_'
-        elif context == 'Element':
-            namevar = 'name'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
-        out.writeline('panda::utils::setAddress(_tree, {namevar}, "{name}", &{name}, _branches, _setStatus);'.format(namevar = namevar, name = self.name))
+        out.writeline('panda::utils::setAddress(_tree, {bname}, &{name}, _branches, _setStatus);'.format(bname = bname, name = self.name))
 
     def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
         if context == 'datastore':
-            namevar = '_name'
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'Singlet':
-            namevar = 'name_'
-        elif context == 'Element':
-            namevar = '_name'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
         if context == 'datastore':
             type_name = 'std::vector<{type}>'.format(type = self.type)
         else:
             type_name = self.type
 
-        out.writeline('panda::utils::book(_tree, {namevar}, "{name}", "{type}", &{name}, _branches);'.format(namevar = namevar, name = self.name, type = type_name))
+        out.writeline('panda::utils::book(_tree, {bname}, "{type}", &{name}, _branches);'.format(bname = bname, name = self.name, type = type_name))
 
     def write_resize_vectors(self, out, context):
         out.writeline('{name}->resize(_size);'.format(name = self.name))

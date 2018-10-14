@@ -8,11 +8,9 @@ thisdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(thisdir + '/lib')
 from panda.generator import Generator
 
-default_outdir = os.path.dirname(os.path.dirname(__file__)) + '/Objects'
-
 argParser = ArgumentParser(description = 'Generate C++ code for a flat tree')
 argParser.add_argument('configs', metavar = 'CONFIG', nargs = '*', help = 'Tree definition files.')
-argParser.add_argument('--out', '-o', dest = 'outdir', default = default_outdir, help = 'Output directory.')
+argParser.add_argument('--out', '-o', dest = 'outdir', default = '.', help = 'Output directory.')
 argParser.add_argument('--namespace', '-n', dest = 'namespace', default = 'panda', help = 'C++ namespace.')
 argParser.add_argument('--clear-custom', '-C', dest = 'clear_custom', action = 'store_true', help = 'Clear custom code.')
 

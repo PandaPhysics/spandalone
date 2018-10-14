@@ -51,24 +51,6 @@ class RefBranch(Branch):
             else:
                 out.writeline('Ref<{type}> {name};'.format(type = self.objname, name = self.refname))
 
-    def write_set_address(self, out, context, use_std_vector = False):
-        if '!' in self.modifier:
-            return
-
-        if context == 'Element':
-            out.writeline('utils::setAddress(_tree, _name, "{name}", gStore.getData(this).{name}, _branches, true);'.format(name = self.name))
-        else:
-            Branch.write_set_address(self, out, context)
-
-    def write_book(self, out, context, use_std_vector = False):
-        if '!' in self.modifier:
-            return
-
-        if context == 'Element':
-            out.writeline('utils::book(_tree, _name, "{name}", "{arrdef}", \'{type}\', gStore.getData(this).{name}, _branches);'.format(name = self.name, arrdef = self.arrdef_text(), type = self.type, refname = self.refname))
-        else:
-            Branch.write_book(self, out, context)
-
     def init_default(self, lines, context):
         if self.is_array():
             return

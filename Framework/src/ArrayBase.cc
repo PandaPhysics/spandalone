@@ -17,7 +17,7 @@ panda::ArrayBase::setAddress(TTree& _tree, utils::BranchList const& _branches/* 
 void
 panda::ArrayBase::book(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/)
 {
-  getData().book(_tree, _branches, false);
+  getData().book(_tree, _branches, Element::datastore::aArray);
 }
 
 void

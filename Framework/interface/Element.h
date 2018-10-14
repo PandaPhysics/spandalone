@@ -47,9 +47,10 @@ namespace panda {
 
       virtual void allocate(UInt_t n) { nmax_ = n; }
       virtual void deallocate() {}
-      virtual void setStatus(TTree&, utils::BranchList const&) {}
-      virtual void setAddress(TTree&, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) {}
-      virtual void book(TTree&, utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) {}
+      virtual void setStatus(TTree&, TString const&, utils::BranchList const&) {}
+      virtual void setAddress(TTree&, TString const&, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) {}
+      enum BookAs {aCollection, aArray, aSinglet};
+      virtual void book(TTree&, TString const&, utils::BranchList const& = {"*"}, BookAs = aCollection) {}
       virtual void releaseTree(TTree&, TString const&) {}
 
       UInt_t nmax() const { return nmax_; }
@@ -99,7 +100,6 @@ namespace panda {
      */
     Element(ArrayBase*);
 
-    virtual void doBook_(TTree&, TString const&, utils::BranchList const&) = 0;
     virtual void doInit_() = 0;
 
     //! Singleton class for bookkeeping of Elements constructed as singlets.

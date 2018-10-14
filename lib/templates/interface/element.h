@@ -1,12 +1,8 @@
-#ifndef @NAMESPACE@_Objects_@NAME@_h
-#define @NAMESPACE@_Objects_@NAME@_h
+#ifndef @NAMESPACE@_@NAME@_h
+#define @NAMESPACE@_@NAME@_h
 
 #include "Constants.h"
 @INCLUDES@
-@IF[PHYS_PARENT]@
-@ELSE@
-#include "../interface/SizeBranchName.h"
-@ENDIF@
 #include "../../Framework/interface/Array.h"
 #include "../../Framework/interface/Collection.h"
 #include "../../Framework/interface/Ref.h"
@@ -27,17 +23,10 @@ namespace @NAMESPACE@ {
       void allocate(UInt_t n) override;
       void deallocate() override;
       void setStatus(TTree&, TString const&, panda::utils::BranchList const&) override;
-      panda::utils::BranchList getStatus(TTree&, TString const&) const override;
-      panda::utils::BranchList getBranchNames(TString const& = "") const override;
       void setAddress(TTree&, TString const&, panda::utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) override;
-      void book(TTree&, TString const&, panda::utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) override;
+      void book(TTree&, TString const&, panda::utils::BranchList const& = {"*"}, BookAs = aCollection) override;
       void releaseTree(TTree&, TString const&) override;
       void resizeVectors_(UInt_t) override;
-
-      @IF[PHYS_PARENT]@
-      @ELSE@
-      typedef @NAMESPACE@::SizeBranchName size_name_type;
-      @ENDIF@
     };
 
     typedef panda::Array<@NAME@> array_type;
@@ -72,7 +61,6 @@ namespace @NAMESPACE@ {
 
     @NAME@(panda::ArrayBase*);
 
-    void doBook_(TTree&, TString const&, panda::utils::BranchList const& = {"*"}) override;
     void doInit_() override;
   };
 

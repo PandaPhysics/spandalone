@@ -1,5 +1,5 @@
-#ifndef @NAMESPACE@_Objects_Constants_h
-#define @NAMESPACE@_Objects_Constants_h
+#ifndef @NAMESPACE@_Constants_h
+#define @NAMESPACE@_Constants_h
 
 @INCLUDES@
 #include <cstring>

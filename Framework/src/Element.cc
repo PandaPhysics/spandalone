@@ -35,8 +35,7 @@ panda::Element::setName(char const* _name)
 void
 panda::Element::setStatus(TTree& _tree, utils::BranchList const& _branches)
 {
-  auto& array(gStore.getArray(this));
-  array.getData().setStatus(_tree, _branches);
+  gStore.getArray(this).getData().setStatus(_tree, _branches);
 }
 
 UInt_t
@@ -48,7 +47,7 @@ panda::Element::setAddress(TTree& _tree, utils::BranchList const& _branches/* = 
 void
 panda::Element::book(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/)
 {
-  doBook_(_tree, gStore.getName(this), _branches);
+  gStore.getArray(this).getData().book(_tree, _branches, datastore::aSinglet);
 }
 
 Int_t

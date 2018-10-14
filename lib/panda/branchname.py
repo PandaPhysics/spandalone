@@ -1,6 +1,6 @@
 from panda.base import Definition
 
-class SizeBranch(Definition):
+class BranchName(Definition):
     def __init__(self, source):
         self.parse = ''
         self.generate = ''
@@ -9,7 +9,7 @@ class SizeBranch(Definition):
         while True:
             line = source.readline()
 
-            if '<end sizebranch>' in line:
+            if line.strip().startswith('<end'):
                 break
 
             if '(parse)' in line:

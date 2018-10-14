@@ -1,4 +1,5 @@
 #include "../interface/@NAME@.h"
+#include "../interface/BranchName.h"
 
 namespace @NAMESPACE@ {
 
@@ -65,21 +66,6 @@ namespace @NAMESPACE@ {
   }
 
   /*protected*/
-  panda::utils::BranchList
-  @NAME@::doGetStatus_(TTree& _tree) const
-  {
-    @IF[PHYS_PARENT]@
-    panda::utils::BranchList blist(@PARENT@::doGetStatus_(_tree));
-    @ELSE@
-    panda::utils::BranchList blist;
-    @ENDIF@
-
-    @GET_STATUS@
-
-    return blist;
-  }
-
-  /*protected*/
   void
   @NAME@::doSetAddress_(TTree& _tree, panda::utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
   {
@@ -113,16 +99,6 @@ namespace @NAMESPACE@ {
 
     /* BEGIN CUSTOM init */
     /* END CUSTOM */
-  }
-
-  /*protected*/
-  panda::utils::BranchList
-  @NAME@::doGetBranchNames_(Bool_t _fullName) const
-  {
-    if (_fullName)
-      return getListOfBranches().fullNames(name_);
-    else
-      return getListOfBranches().fullNames();
   }
 
   void

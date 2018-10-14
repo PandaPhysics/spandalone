@@ -1,5 +1,5 @@
-#ifndef @NAMESPACE@_Objects_@NAME@_h
-#define @NAMESPACE@_Objects_@NAME@_h
+#ifndef @NAMESPACE@_@NAME@_h
+#define @NAMESPACE@_@NAME@_h
 
 #include "Constants.h"
 @INCLUDES@
@@ -24,8 +24,6 @@ namespace @NAMESPACE@ {
         
   protected:
     void doSetStatus_(TTree&, panda::utils::BranchList const&) override;
-    panda::utils::BranchList doGetStatus_(TTree&) const override;
-    panda::utils::BranchList doGetBranchNames_() const override;
     void doSetAddress_(TTree&, panda::utils::BranchList const&, Bool_t setStatus) override;
     void doBook_(TTree&, panda::utils::BranchList const&) override;
     void doGetEntry_(TTree&) override;

@@ -1,4 +1,5 @@
 #include "../interface/@NAME@.h"
+#include "../interface/BranchName.h"
 
 namespace @NAMESPACE@ {
 
@@ -50,20 +51,6 @@ namespace @NAMESPACE@ {
     @SET_STATUS@
   }
 
-  panda::utils::BranchList
-  @NAME@::datastore::getStatus(TTree& _tree, TString const& _name) const
-  {
-    @IF[PHYS_PARENT]@
-    panda::utils::BranchList blist(@PARENT@::datastore::getStatus(_tree, _name));
-    @ELSE@
-    panda::utils::BranchList blist;
-    @ENDIF@
-
-    @GET_STATUS@
-
-    return blist;
-  }
-
   void
   @NAME@::datastore::setAddress(TTree& _tree, TString const& _name, panda::utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
   {
@@ -75,13 +62,25 @@ namespace @NAMESPACE@ {
   }
 
   void
-  @NAME@::datastore::book(TTree& _tree, TString const& _name, panda::utils::BranchList const& _branches/* = {"*"}*/, Bool_t _dynamic/* = kTRUE*/)
+  @NAME@::datastore::book(TTree& _tree, TString const& _name, panda::utils::BranchList const& _branches/* = {"*"}*/, BookAs _bookAs/* = aCollection*/)
   {
     @IF[PHYS_PARENT]@
-    @PARENT@::datastore::book(_tree, _name, _branches, _dynamic);
+    @PARENT@::datastore::book(_tree, _name, _branches, _bookAs);
 
     @ENDIF@
-    TString size(_dynamic ? "[" + _name + ".size]" : TString::Format("[%d]", nmax_));
+    TString size;
+
+    switch (_bookAs) {
+    case aCollection:
+      size = TString::Format("[%s]", SizeBranchName(_name).toString());
+      break;
+    case aArray:
+      size = TString::Format("[%d]", nmax_);
+      break;
+    case aSinglet:
+      size = "";
+      break;
+    }
 
     @DSBOOK@
   }
@@ -104,12 +103,6 @@ namespace @NAMESPACE@ {
 
     @ENDIF@
     @RESIZE_VECTORS@
-  }
-
-  panda::utils::BranchList
-  @NAME@::datastore::getBranchNames(TString const& _name/* = ""*/) const
-  {
-    return @NAME@::getListOfBranches().fullNames(_name);
   }
 
   @IF[INSTANTIABLE]@
@@ -166,17 +159,6 @@ namespace @NAMESPACE@ {
     /* END CUSTOM */
 
     @DESTRUCTOR@
-  }
-
-  /*protected*/
-  void
-  @NAME@::doBook_(TTree& _tree, TString const& _name, panda::utils::BranchList const& _branches/* = {"*"}*/)
-  {
-    @IF[PHYS_PARENT]@
-    @PARENT@::doBook_(_tree, _name, _branches);
-
-    @ENDIF@
-    @BOOK@
   }
 
   /*protected*/

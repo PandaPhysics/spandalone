@@ -3,7 +3,8 @@ from refbranch import RefBranch
 from generic import GenericBranch
 from physics import PhysicsObject
 
-class RefVectorBranch(RefBranch, GenericBranch):
+#class RefVectorBranch(RefBranch, GenericBranch):
+class RefVectorBranch(GenericBranch):
     """
     RefVector definition. Definition file syntax:
     <name>/<type>RefVector
@@ -51,24 +52,6 @@ class RefVectorBranch(RefBranch, GenericBranch):
                 out.writeline('RefVector<{type}> {name}{arrdef}{{}};'.format(type = self.objname, name = self.refname, arrdef = self.arrdef_text()))
             else:
                 out.writeline('RefVector<{type}> {name};'.format(type = self.objname, name = self.refname))
-
-    def write_set_address(self, out, context):
-        if context == 'Element':
-            # address of the indices vector of the first refvector (if this is an array of refvectors) is the address of the array<vector<unsigned>, N>
-            # very ugly but should work
-            subscript = ''.join('[0]' for a in self.arrdef)
-            out.writeline('utils::setAddress(_tree, _name, "{name}", &{refname}{subscript}.indices(), _branches, true);'.format(name = self.name, refname = self.refname, subscript = subscript))
-        else:
-            GenericBranch.write_set_address(self, out, context)
-
-    def write_book(self, out, context):
-        if context == 'Element':
-            # address of the indices vector of the first refvector (if this is an array of refvectors) is the address of the array<vector<unsigned>, N>
-            # very ugly but should work
-            subscript = ''.join('[0]' for a in self.arrdef)
-            out.writeline('utils::book(_tree, _name, "{name}", "{type}", &{refname}{subscript}.indices(), _branches);'.format(name = self.name, type = self.type, refname = self.refname, subscript = subscript))
-        else:
-            GenericBranch.write_book(self, out, context)
 
     def init_default(self, lines, context):
         if self.is_array():

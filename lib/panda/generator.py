@@ -79,6 +79,7 @@ class Generator(object):
         self.functions = []
         self.phobjects = []
         self.trees = []
+        self.branchname = None
         self.sizebranch = None
 
     def parse(self):
@@ -107,8 +108,12 @@ class Generator(object):
                     self.std_vector_branches = eval(line.strip().replace('<std_vector_branches ', '').replace('>', ''))
                     continue
 
-                if line.startswith('<sizebranch>'):
-                    self.sizebranch = SizeBranch(configFile)
+                if line.startswith('<branch_name>'):
+                    self.branchname = BranchName(configFile)
+                    continue
+
+                if line.startswith('<size_branch_name>'):
+                    self.sizebranch = BranchName(configFile)
                     continue
        
                 try:
@@ -176,12 +181,13 @@ class Generator(object):
             self.write_phobj_header(objdef)
             self.write_phobj_src(objdef)
 
-        self.write_size_branch()
-
         # Tree entries
         for treedef in self.trees:
             self.write_tree_header(treedef)
             self.write_tree_src(treedef)
+
+        # Branch naming convention
+        self.write_branch_name()
 
     def write_constants_header(self):
         # Global constants and functions (header)
@@ -341,7 +347,6 @@ class Generator(object):
         copy_ctor = BufferOutput()
         assignment = BufferOutput()
         set_status = BufferOutput()
-        get_status = BufferOutput()
         set_address = BufferOutput()
         book = BufferOutput()
         init = BufferOutput()
@@ -357,7 +362,6 @@ class Generator(object):
             objdef.write_initializers_private(initializers_private)
 
             standard_ctor = BufferOutput()
-            dsbook = BufferOutput()
             allocate = BufferOutput()
             deallocate = BufferOutput()
             release_tree = BufferOutput()
@@ -371,9 +375,8 @@ class Generator(object):
             branch.write_copy_ctor(copy_ctor, context = context)
             branch.write_assign(assignment, context = context)
             branch.write_set_status(set_status, context = dscontext)
-            branch.write_get_status(get_status, context = dscontext)
             branch.write_set_address(set_address, context = dscontext, use_std_vector = self.std_vector_branches)
-            branch.write_book(book, context = context)
+            branch.write_book(book, context = dscontext, use_std_vector = self.std_vector_branches)
             branch.write_init(init, context = context)
             branch.write_dump(dump)
 
@@ -381,7 +384,6 @@ class Generator(object):
                 branch.write_standard_ctor(standard_ctor, context = context)
                 branch.write_allocate(allocate, context = dscontext, use_std_vector = self.std_vector_branches)
                 branch.write_deallocate(deallocate, context = dscontext, use_std_vector = self.std_vector_branches)
-                branch.write_book(dsbook, context = dscontext, use_std_vector = self.std_vector_branches)
                 branch.write_release_tree(release_tree, context = dscontext)
                 branch.write_resize_vectors(resize_vectors, context = dscontext)
 
@@ -405,7 +407,6 @@ class Generator(object):
             'BNAMES': bnames,
             'ASSIGNMENT': assignment,
             'SET_STATUS': set_status,
-            'GET_STATUS': get_status,
             'SET_ADDRESS': set_address,
             'BOOK': book,
             'INIT': init,
@@ -435,9 +436,23 @@ class Generator(object):
         else:
             source.write_from_template(template_path + '/src/element.cc', replacements)
 
-    def write_size_branch(self):
+    def write_branch_name(self):
         # Size branch name for collections
         replacements = {'NAMESPACE': self.namespace}
+
+        if self.branchname is None:
+            replacements['CUSTOM_BRANCHNAME'] = False
+        else:
+            parse = BufferOutput()
+            self.sizebranch.write_parse(parse)
+            generate = BufferOutput()
+            self.sizebranch.write_generate(generate)
+
+            replacements.update({
+                'CUSTOM_BRANCHNAME': True,
+                'BRANCHNAME_PARSE': parse,
+                'BRANCHNAME_GENERATE': generate
+            })
 
         if self.sizebranch is None:
             replacements['CUSTOM_SIZEBRANCH'] = False
@@ -453,11 +468,11 @@ class Generator(object):
                 'SIZEBRANCH_GENERATE': generate
             })
 
-        outfile = FileOutput(self.outdir + '/Objects/interface/SizeBranchName.h')
-        outfile.write_from_template(template_path + '/interface/SizeBranchName.h', replacements)
+        outfile = FileOutput(self.outdir + '/Objects/interface/BranchName.h')
+        outfile.write_from_template(template_path + '/interface/BranchName.h', replacements)
         outfile.close()
-        outfile = FileOutput(self.outdir + '/Objects/src/SizeBranchName.cc')
-        outfile.write_from_template(template_path + '/src/SizeBranchName.cc', replacements)
+        outfile = FileOutput(self.outdir + '/Objects/src/BranchName.cc')
+        outfile.write_from_template(template_path + '/src/BranchName.cc', replacements)
         outfile.close()            
 
     def write_tree_header(self, treedef):
@@ -541,14 +556,12 @@ class Generator(object):
             function.write_def(src, context = treedef.name)
 
         set_status = BufferOutput()
-        get_status = BufferOutput()
         set_address = BufferOutput()
         book = BufferOutput()
         init = BufferOutput()
 
         for branch in treedef.branches:
             branch.write_set_status(set_status, context = 'TreeEntry')
-            branch.write_get_status(get_status, context = 'TreeEntry')
             branch.write_set_address(set_address, context = 'TreeEntry')
             branch.write_book(book, context = 'TreeEntry')
             branch.write_init(init, context = 'TreeEntry')
@@ -573,7 +586,6 @@ class Generator(object):
             'OBJ_BLIST': obj_blist,
             'FUNCTIONS': functions,
             'SET_STATUS': set_status,
-            'GET_STATUS': get_status,
             'SET_ADDRESS': set_address,
             'BOOK': book,
             'INIT': init

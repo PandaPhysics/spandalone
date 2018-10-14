@@ -60,10 +60,6 @@ class ObjBranch(Definition):
         raise RuntimeError('Not used')
         out.writeline('{name}.setStatus(_tree, _branches.subList("{name}"));'.format(name = self.name))
 
-    def write_get_status(self, out):
-        raise RuntimeError('Not used')
-        out.writeline('blist += {name}.getStatus(_tree);'.format(name = self.name))
-
     def write_set_address(self, out):
         raise RuntimeError('Not used')
         out.writeline('{name}.setAddress(_tree, _branches.subList("{name}"), _setStatus);'.format(name = self.name))

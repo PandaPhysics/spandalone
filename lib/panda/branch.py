@@ -122,39 +122,24 @@ class Branch(Definition):
             return
 
         if context == 'datastore':
-            namevar = '_name'
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'Singlet':
-            namevar = 'name_'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
-        out.writeline('panda::utils::setStatus(_tree, {namevar}, "{name}", _branches);'.format(namevar = namevar, name = self.name))
-
-    def write_get_status(self, out, context):
-        if '!' in self.modifier:
-            return
-
-        if context == 'datastore':
-            namevar = '_name'
-        elif context == 'Singlet':
-            namevar = 'name_'
-        elif context == 'TreeEntry':
-            namevar = '""'
-
-        out.writeline('blist.push_back(panda::utils::getStatus(_tree, {namevar}, "{name}"));'.format(namevar = namevar, name = self.name))
+        out.writeline('panda::utils::setStatus(_tree, {bname}, _branches);'.format(bname = bname))
 
     def write_set_address(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
-        if context == 'datastore':
-            namevar = '_name'
+        if context == 'datastore' or context == 'Element':
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'Singlet':
-            namevar = 'name_'
-        elif context == 'Element':
-            namevar = '_name'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
         if context == 'datastore' and use_std_vector:
             ptr = '&' + self.name + 'Ptr_';
@@ -163,14 +148,14 @@ class Branch(Definition):
         else:
             ptr = '&' + self.name
 
-        out.writeline('panda::utils::setAddress(_tree, {namevar}, "{name}", {ptr}, _branches, _setStatus);'.format(namevar = namevar, name = self.name, ptr = ptr))
+        out.writeline('panda::utils::setAddress(_tree, {bname}, {ptr}, _branches, _setStatus);'.format(bname = bname, ptr = ptr))
 
     def write_book(self, out, context, use_std_vector = False):
         if '!' in self.modifier:
             return
 
         if context == 'datastore' and use_std_vector:
-            out.writeline('panda::utils::book(_tree, _name, "{name}", "std::vector<{vartype}>", &{name}Ptr_, _branches);'.format(vartype = self.vartype(), name = self.name))
+            out.writeline('panda::utils::book(_tree, BranchName(_name, "{name}"), "std::vector<{vartype}>", &{name}Ptr_, _branches);'.format(vartype = self.vartype(), name = self.name))
             return
 
         if self.is_array():
@@ -192,39 +177,37 @@ class Branch(Definition):
             size_str = '"{arrdef}"'.format(arrdef = self.arrdef_text())
 
         if context == 'datastore':
-            namevar = '_name'
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
             if self.is_array():
                 size_str = 'size + ' + size_str
             else:
                 size_str = 'size'
         elif context == 'Singlet':
-            namevar = 'name_'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'Element':
-            namevar = '_name'
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
         if context == 'datastore' or self.is_array():
             ptr = self.name
         else:
             ptr = '&' + self.name
 
-        out.writeline('panda::utils::book(_tree, {namevar}, "{name}", {size}, \'{type}\', {ptr}, _branches);'.format(namevar = namevar, name = self.name, size = size_str, type = self.type, ptr = ptr))
+        out.writeline('panda::utils::book(_tree, {bname}, {size}, \'{type}\', {ptr}, _branches);'.format(bname = bname, size = size_str, type = self.type, ptr = ptr))
 
     def write_release_tree(self, out, context):
         if '!' in self.modifier:
             return
 
-        if context == 'datastore':
-            namevar = '_name'
+        if context == 'datastore' or context == 'Element':
+            bname = 'BranchName(_name, "{name}")'.format(name = self.name)
         elif context == 'Singlet':
-            namevar = 'name_'
-        elif context == 'Element':
-            namevar = '_name'
+            bname = 'BranchName(name_, "{name}")'.format(name = self.name)
         elif context == 'TreeEntry':
-            namevar = '""'
+            bname = 'BranchName("{name}")'.format(name = self.name)
 
-        out.writeline('panda::utils::resetAddress(_tree, {namevar}, "{name}");'.format(namevar = namevar, name = self.name))
+        out.writeline('panda::utils::resetAddress(_tree, {bname});'.format(bname = bname))
 
     def write_resize_vectors(self, out, context):
         pass

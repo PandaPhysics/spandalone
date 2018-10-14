@@ -58,7 +58,7 @@ panda::CollectionBase::book(TTree& _tree, utils::BranchList const& _branches/* =
 
   _tree.Branch(sizeBranchName_().toString(), &size_, "size/i");
 
-  getData().book(_tree, _branches, true);
+  getData().book(_tree, _branches, Element::datastore::aCollection);
 
   outputs_.emplace_back(&_tree, true);
   
