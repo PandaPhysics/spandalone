@@ -39,23 +39,6 @@ panda::Element::setStatus(TTree& _tree, utils::BranchList const& _branches)
   array.getData().setStatus(_tree, array.getName(), _branches);
 }
 
-std::unique_ptr<panda::utils::BranchList>
-panda::Element::getStatus(TTree& _tree) const
-{
-  auto& array(gStore.getArray(this));
-  return array.getData().getStatus(_tree, array.getName());
-}
-
-std::unique_ptr<panda::utils::BranchList>
-panda::Element::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = kFALSE*/) const
-{
-  auto& array(gStore.getArray(this));
-  if (_fullName)
-    return array.getData().getBranchNames(array.getName());
-  else
-    return array.getData().getBranchNames();
-}
-
 UInt_t
 panda::Element::setAddress(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
 {

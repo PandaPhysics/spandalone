@@ -21,8 +21,6 @@ namespace panda {
     Singlet& operator=(Singlet const& _src) { name_ = _src.name_; return *this; }
 
     void setStatus(TTree&, utils::BranchList const& blist) final;
-    std::unique_ptr<utils::BranchList> getStatus(TTree&) const final;
-    std::unique_ptr<utils::BranchList> getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
     UInt_t setAddress(TTree&, utils::BranchList const& blist = {"*"}, Bool_t setStatus = kTRUE) final;
     void book(TTree&, utils::BranchList const& blist = {"*"}) final;
     void init() final { doInit_(); }
@@ -31,8 +29,6 @@ namespace panda {
 
   protected:
     virtual void doSetStatus_(TTree&, utils::BranchList const&) = 0;
-    virtual std::unique_ptr<utils::BranchList> doGetStatus_(TTree&) const = 0;
-    virtual std::unique_ptr<utils::BranchList> doGetBranchNames_(Bool_t) const = 0;
     virtual void doSetAddress_(TTree&, utils::BranchList const&, Bool_t setStatus) = 0;
     virtual void doBook_(TTree&, utils::BranchList const&) = 0;
     virtual void doInit_() = 0;

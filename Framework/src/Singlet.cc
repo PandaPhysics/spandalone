@@ -6,18 +6,6 @@ panda::Singlet::setStatus(TTree& _tree, utils::BranchList const& _branches)
   doSetStatus_(_tree, _branches);
 }
 
-std::unique_ptr<panda::utils::BranchList>
-panda::Singlet::getStatus(TTree& _tree) const
-{
-  return doGetStatus_(_tree);
-}
-
-std::unique_ptr<panda::utils::BranchList>
-panda::Singlet::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = kFALSE*/) const
-{
-  return doGetBranchNames_(_fullName);
-}
-
 UInt_t
 panda::Singlet::setAddress(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
 {

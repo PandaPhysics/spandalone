@@ -24,8 +24,6 @@ namespace panda {
     TreeEntry& operator=(TreeEntry const&) { return *this; }
 
     void setStatus(TTree&, utils::BranchList const& blist) final;
-    std::unique_ptr<utils::BranchList> getStatus(TTree&) const final;
-    std::unique_ptr<utils::BranchList> getBranchNames(Bool_t = kTRUE, Bool_t direct = kFALSE) const final;
     UInt_t setAddress(TTree&, utils::BranchList const& blist = {"*"}, Bool_t setStatus = kTRUE) final;
     void book(TTree&, utils::BranchList const& blist = {"*"}) final;
     using ReaderObject::getEntry;
@@ -38,8 +36,6 @@ namespace panda {
 
   protected:
     virtual void doSetStatus_(TTree&, utils::BranchList const&) = 0;
-    virtual std::unique_ptr<utils::BranchList> doGetStatus_(TTree&) const = 0;
-    virtual std::unique_ptr<utils::BranchList> doGetBranchNames_() const = 0;
     virtual void doSetAddress_(TTree& tree, utils::BranchList const&, Bool_t setStatus) = 0;
     virtual void doBook_(TTree&, utils::BranchList const&) = 0;
     virtual void doGetEntry_(TTree&) = 0;

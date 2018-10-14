@@ -31,42 +31,6 @@ panda::CollectionBase::setStatus(TTree& _tree, utils::BranchList const& _branche
   getData().setStatus(_tree, name_, _branches);
 }
 
-std::unique_ptr<panda::utils::BranchList>
-panda::CollectionBase::getStatus(TTree& _tree) const
-{
-  utils::BranchList* blist(new utils::BranchList());
-
-  if (_tree.GetBranchStatus(sizeBranchName_()))
-    blist->emplace_back(utils::BranchName("size").fullName(name_));
-  else
-    blist->emplace_back(utils::BranchName("!size").fullName(name_));
-
-  (*blist) += getData().getStatus(_tree, name_);
-
-  return std::unique_ptr<panda::utils::BranchList>(blist);
-}
-
-std::unique_ptr<panda::utils::BranchList>
-panda::CollectionBase::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = kFALSE*/) const
-{
-  //IMPORTANT
-  // Don't change the order of size and other branches! We rely on the size branch
-  // being the first element in the BranchArray.
-
-  utils::BranchList* blist(new utils::BranchList());
-
-  if (_fullName) {
-    blist->emplace_back(utils::BranchName("size").fullName(name_));
-    (*blist) += getData().getBranchNames(name_);
-  }
-  else {
-    blist->emplace_back("size");
-    (*blist) += getData().getBranchNames();
-  }
-
-  return std::unqiue_ptr<panda::utils::BranchList>(blist);
-}
-
 UInt_t
 panda::CollectionBase::setAddress(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
 {

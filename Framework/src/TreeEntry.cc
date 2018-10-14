@@ -9,34 +9,6 @@ panda::TreeEntry::setStatus(TTree& _tree, utils::BranchList const& _branches)
   doSetStatus_(_tree, _branches);
 }
 
-std::unique_ptr<panda::utils::BranchList>
-panda::TreeEntry::getStatus(TTree& _tree) const
-{
-  utils::BranchList* blist(new utils::BranchList());
-
-  for (auto* obj : objects_)
-    (*blist) += obj->getStatus(_tree);
-
-  (*blist) += doGetStatus_(_tree);
-
-  return std::unique_ptr<panda::utils::BranchList>(blist);
-}
-
-std::unique_ptr<panda::utils::BranchList>
-panda::TreeEntry::getBranchNames(Bool_t/* = kTRUE*/, Bool_t _direct/* = kFALSE*/) const
-{
-  utils::BranchList* blist(new utils::BranchList());
-
-  if (!_direct) {
-    for (auto* obj : objects_)
-      (*blist) += obj->getBranchNames(true);
-  }
-
-  (*blist) += doGetBranchNames_();
-
-  return std::unique_ptr<panda::utils::BranchList>(blist);
-}
-
 UInt_t
 panda::TreeEntry::setAddress(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
 {

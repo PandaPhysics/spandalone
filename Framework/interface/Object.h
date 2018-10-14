@@ -39,16 +39,6 @@ namespace panda {
      */
     virtual void setStatus(TTree& tree, utils::BranchList const&) {}
 
-    //! Get status of branches in the tree
-    virtual std::unique_ptr<utils::BranchList> getStatus(TTree&) const { return std::make_unique<utils::BranchList>(); }
-
-    //! Get the full list of branch names
-    /*!
-     * \param fullName  If true, prepend "(object name)."
-     * \param direct    If true, return only direct branches of this object (relevant only for TreeEntry)
-     */
-    virtual std::unique_ptr<utils::BranchList> getBranchNames(Bool_t fullName = kTRUE, Bool_t direct = kFALSE) const { return std::make_unique<utils::BranchList>(); }
-
     //! Bind the tree branches to the elements of this object.
     /*!
      * \param tree

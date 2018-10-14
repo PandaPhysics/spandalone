@@ -20,8 +20,6 @@ namespace panda {
     ArrayBase& operator=(ArrayBase const&) = delete;
 
     void setStatus(TTree&, utils::BranchList const& blist) final;
-    std::unique_ptr<utils::BranchList> getStatus(TTree&) const final;
-    std::unique_ptr<utils::BranchList> getBranchNames(Bool_t fullName = kTRUE, Bool_t = kFALSE) const final;
     UInt_t setAddress(TTree&, utils::BranchList const& blist = {"*"}, Bool_t setStatus = kTRUE) final;
     void book(TTree&, utils::BranchList const& blist = {"*"}) final;
     void init() final;

@@ -6,21 +6,6 @@ panda::ArrayBase::setStatus(TTree& _tree, utils::BranchList const& _branches)
   getData().setStatus(_tree, name_, _branches);
 }
 
-std::unique_ptr<panda::utils::BranchList>
-panda::ArrayBase::getStatus(TTree& _tree) const
-{
-  return getData().getStatus(_tree, name_);
-}
-
-std::unique_ptr<panda::utils::BranchList>
-panda::ArrayBase::getBranchNames(Bool_t _fullName/* = kTRUE*/, Bool_t/* = kFALSE*/) const
-{
-  if (_fullName)
-    return getData().getBranchNames(name_);
-  else
-    return getData().getBranchNames("");
-}
-
 UInt_t
 panda::ArrayBase::setAddress(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/, Bool_t _setStatus/* = kTRUE*/)
 {
