@@ -66,7 +66,7 @@ namespace panda {
      * Collection<E> reimplements this function with the branch name rule in the namespace
      * prvided from E
      */
-    virtual TString sizeBranchName_() const = 0;
+    virtual utils::BranchName const& sizeBranchName_() const = 0;
 
   private:
     void doSetAddress_(TTree&, utils::BranchList const&, Bool_t setStatus, Bool_t asInput);

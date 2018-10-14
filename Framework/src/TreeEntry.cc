@@ -1,4 +1,5 @@
 #include "../interface/TreeEntry.h"
+#include "../interface/CollectionBase.h"
 
 void
 panda::TreeEntry::setStatus(TTree& _tree, utils::BranchList const& _branches)

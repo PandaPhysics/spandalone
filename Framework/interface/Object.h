@@ -49,6 +49,14 @@ namespace panda {
      */
     virtual UInt_t setAddress(TTree& tree, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) { return -1; }
 
+    //! Get the list of branch names
+    /*!
+     * Returns only the names of the "direct" branches of the object, not of the panda objects this
+     * Object owns
+     */
+    //    virtual utils::BranchList const& getBranchNames() const { return branchList_; }
+    virtual utils::BranchList const& getBranchNames() const = 0;
+
     //! Book new branches bound to this object on the tree.
     /*!
      * \param tree
@@ -103,6 +111,10 @@ namespace panda {
 
     //! Dump the object content.
     virtual void dump(std::ostream& = std::cout) const {}
+
+  /* private: */
+  /*   // a dummy branch list */
+  /*   static utils::BranchList  */
   };
 
 }

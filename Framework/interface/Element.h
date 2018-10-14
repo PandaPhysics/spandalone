@@ -47,11 +47,9 @@ namespace panda {
 
       virtual void allocate(UInt_t n) { nmax_ = n; }
       virtual void deallocate() {}
-      virtual void setStatus(TTree&, TString const&, utils::BranchList const&) {}
-      virtual std::unique_ptr<utils::BranchList> getStatus(TTree&, TString const&) const { return std::make_unique<utils::BranchList>(); }
-      virtual std::unique_ptr<utils::BranchList> getBranchNames(TString const& = "") const { return std::make_unique<utils::BranchList>(); }
-      virtual void setAddress(TTree&, TString const&, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) {}
-      virtual void book(TTree&, TString const&, utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) {}
+      virtual void setStatus(TTree&, utils::BranchList const&) {}
+      virtual void setAddress(TTree&, utils::BranchList const& = {"*"}, Bool_t setStatus = kTRUE) {}
+      virtual void book(TTree&, utils::BranchList const& = {"*"}, Bool_t dynamic = kTRUE) {}
       virtual void releaseTree(TTree&, TString const&) {}
 
       UInt_t nmax() const { return nmax_; }

@@ -19,16 +19,16 @@ panda::CollectionBase::setStatus(TTree& _tree, utils::BranchList const& _branche
 {
   // If the size branch does not exist, there is nothing to read from this tree.
   // See comments in IOUtils.cc checkStatus for the ordering of function calls here.
-  if (!_tree.GetBranch(sizeBranchName_()) && _tree.GetTreeNumber() >= 0)
+  if (!_tree.GetBranch(sizeBranchName_().toString()) && _tree.GetTreeNumber() >= 0)
     return;
 
   // If explicitly instructed to turn off size -> turn size false
-  if (utils::BranchName("size").vetoed(_branches))
-    _tree.SetBranchStatus(sizeBranchName_(), false);
+  if (_branches.vetoes(sizeBranchName_()))
+    _tree.SetBranchStatus(sizeBranchName_().toString(), false);
   else
-    _tree.SetBranchStatus(sizeBranchName_(), true);
+    _tree.SetBranchStatus(sizeBranchName_().toString(), true);
 
-  getData().setStatus(_tree, name_, _branches);
+  getData().setStatus(_tree, _branches);
 }
 
 UInt_t
@@ -48,7 +48,7 @@ panda::CollectionBase::setAddress(TTree& _tree, utils::BranchList const& _branch
 void
 panda::CollectionBase::book(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (!_branches.matchesAny(getBranchNames(false)))
+  if (!_branches.matchesAny(getBranchNames()))
     return;
 
   for (auto& output : outputs_) {
@@ -56,9 +56,9 @@ panda::CollectionBase::book(TTree& _tree, utils::BranchList const& _branches/* =
       throw std::runtime_error(("Doubly booking collection " + name_ + " on tree").Data());
   }
 
-  _tree.Branch(sizeBranchName_(), &size_, "size/i");
+  _tree.Branch(sizeBranchName_().toString(), &size_, "size/i");
 
-  getData().book(_tree, name_, _branches, true);
+  getData().book(_tree, _branches, true);
 
   outputs_.emplace_back(&_tree, true);
   
@@ -205,17 +205,17 @@ panda::CollectionBase::prepareFill(TTree& _tree)
 void
 panda::CollectionBase::doSetAddress_(TTree& _tree, utils::BranchList const& _branches, Bool_t _setStatus, Bool_t _asInput)
 {
-  if (!_branches.matchesAny(getBranchNames(false)))
+  if (!_branches.matchesAny(getBranchNames()))
     return;
 
   Int_t sizeStatus(0);
   if (_asInput)
-    sizeStatus = utils::setAddress(_tree, name_, "size", &sizeIn_, {"size"}, _setStatus);
+    sizeStatus = utils::setAddress(_tree, sizeBranchName_(), &sizeIn_, {"size"}, _setStatus);
   else
-    sizeStatus = utils::setAddress(_tree, name_, "size", &size_, {"size"}, _setStatus);
+    sizeStatus = utils::setAddress(_tree, sizeBranchName_(), &size_, {"size"}, _setStatus);
 
   if (sizeStatus != 1)
     return;
   
-  getData().setAddress(_tree, name_, _branches, _setStatus);
+  getData().setAddress(_tree, _branches, _setStatus);
 }

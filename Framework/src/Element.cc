@@ -36,7 +36,7 @@ void
 panda::Element::setStatus(TTree& _tree, utils::BranchList const& _branches)
 {
   auto& array(gStore.getArray(this));
-  array.getData().setStatus(_tree, array.getName(), _branches);
+  array.getData().setStatus(_tree, _branches);
 }
 
 UInt_t

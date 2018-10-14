@@ -1,6 +1,8 @@
 #ifndef PandaTree_Interface_BranchList_h
 #define PandaTree_Interface_BranchList_h
 
+#include "BranchName.h"
+
 #include "TString.h"
 #include "TTree.h"
 
@@ -11,7 +13,6 @@
 
 namespace panda {
   namespace utils {
-    class BranchName;
     class NullNameSyntax;
     template<class T> class BranchListImpl;
 
@@ -23,22 +24,46 @@ namespace panda {
      * but a special-case construction with {"*"} or {"!*"} is defined.
      */
     class BranchList {
-    public:
-      typedef std::reference_wrapper<BranchName> ref_wrapper;
-      typedef std::vector<ref_wrapper> ref_vector;
-      typedef BranchName& reference;
-      typedef BranchName const& const_reference;
-      typedef ref_vector::iterator iterator;
-      typedef ref_vector::const_iterator const_iterator;
+      typedef std::vector<BranchName const*> container_type;
 
+    public:
+      class Iterator {
+        friend BranchList;
+
+      public:
+        typedef BranchName const value_type;
+        typedef int difference_type;
+        typedef BranchName const& reference;
+        typedef BranchName const* pointer;
+        typedef std::forward_iterator_tag iterator_category;
+
+        Iterator(Iterator const& src) : baseItr_(src.baseItr_) {}
+        Iterator& operator=(Iterator const& rhs) { baseItr_ = rhs.baseItr_; return *this; }
+        ~Iterator() {}
+        void swap(Iterator& other) { std::swap(baseItr_, other.baseItr_); }
+        reference operator*() { return **baseItr_; }
+        Iterator& operator++() { ++baseItr_; return *this; }
+        bool operator==(Iterator const& rhs) const { return baseItr_ == rhs.baseItr_; }
+        bool operator!=(Iterator const& rhs) const { return baseItr_ != rhs.baseItr_; }
+
+      private:
+        typedef typename container_type::const_iterator base_type;
+
+        Iterator(base_type const& _itr) : baseItr_(_itr) {}
+
+        base_type baseItr_;
+      };
+
+      typedef BranchName const& const_reference;
+      typedef Iterator const_iterator;
+
+      BranchList() {}
       BranchList(std::initializer_list<TString>);
 
-      reference at(unsigned i) { return nameRefs_.at(i); }
-      const_reference at(unsigned i) const { return nameRefs_.at(i); }
-      iterator begin() { return nameRefs_.begin(); }
-      const_iterator begin() const { nameRefs_.begin(); }
-      iterator end() { nameRefs_.end(); }
-      const_iterator end() const { nameRefs_.end(); }
+      unsigned size() const { return nameRefs_.size(); }
+      const_reference at(unsigned i) const { return *nameRefs_.at(i); }
+      const_iterator begin() const { return const_iterator(nameRefs_.begin()); }
+      const_iterator end() const { return const_iterator(nameRefs_.end()); }
 
       //! Returns true if any of the branch in the list is not vetoed in my list.
       bool matchesAny(BranchList const&) const;
@@ -69,7 +94,7 @@ namespace panda {
       int getVerbosity() const { return verbosity_; }
 
     protected:
-      ref_vector nameRefs_;
+      container_type nameRefs_;
       BranchName matchAll_;
       int verbosity_{0};
     };
@@ -81,6 +106,7 @@ namespace panda {
       typedef BranchNameImpl<T> name_type;
       typedef BranchListImpl<T> self_type;
 
+      BranchListImpl() {}
       BranchListImpl(std::initializer_list<TString>);
 
       void clear() { nameRefs_.clear(); names_.clear(); }
@@ -104,7 +130,7 @@ namespace panda {
         names_.emplace_back(name);
 
       for (auto& name : names_)
-        nameRefs_.emplace_back(name);
+        nameRefs_.push_back(&name);
     }
 
     template<class T>
@@ -112,12 +138,12 @@ namespace panda {
     void
     BranchListImpl<T>::emplace_back(Args&&... args)
     {
-      names_.emplace_back(&args...);
+      names_.emplace_back(args...);
       
       // names_ may have been reallocated
       nameRefs_.clear();
       for (auto& name : names_)
-        nameRefs_.emplace_back(name);
+        nameRefs_.push_back(&name);
     }
 
     template<class T>
@@ -129,7 +155,7 @@ namespace panda {
       // names_ may have been reallocated
       nameRefs_.clear();
       for (auto& name : names_)
-        nameRefs_.emplace_back(name);
+        nameRefs_.push_back(&name);
 
       return *this;
     }

@@ -38,7 +38,7 @@ namespace panda {
        */
       bool match(BranchName const&) const;
 
-    private:
+    protected:
       bool isVeto_{false};
     };
 

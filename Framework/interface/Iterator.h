@@ -17,9 +17,9 @@ namespace panda {
       friend const_type;
 
     public:
-      typedef int difference_type;
       typedef Iterator<C, is_const> self_type;
       typedef typename C::value_type value_type;
+      typedef int difference_type;
       typedef typename std::conditional<is_const, typename C::const_reference, typename C::reference>::type reference;
       typedef typename std::conditional<is_const, typename C::const_pointer, typename C::pointer>::type pointer;
       typedef std::random_access_iterator_tag iterator_category;

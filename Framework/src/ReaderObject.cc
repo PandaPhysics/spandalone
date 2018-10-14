@@ -1,5 +1,7 @@
 #include "../interface/ReaderObject.h"
 
+#include "../interface/IOUtils.h"
+
 #include "TTree.h"
 #include "TChain.h"
 #include "TList.h"
@@ -112,8 +114,8 @@ panda::ReaderObject::updateBranchArray(TTree& _tree)
       auto& branchArray(inputBranches_[iT].second);
 
       branchArray.clear();
-      for (auto& bname : getBranchNames(true, true))
-        branchArray.push_back(_tree.GetBranch(bname.fullName())); // allow nullptrs
+      for (auto& bname : getBranchNames())
+        branchArray.push_back(_tree.GetBranch(bname.toString())); // allow nullptrs
     }
   }
 }

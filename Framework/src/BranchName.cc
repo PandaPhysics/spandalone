@@ -3,7 +3,7 @@
 panda::utils::BranchName&
 panda::utils::BranchName::operator=(BranchName const& _rhs)
 {
-  BranchNameCore::operator=(_rhs);
+  core_type::operator=(_rhs);
   isVeto_ = _rhs.isVeto_;
   return *this;
 }
