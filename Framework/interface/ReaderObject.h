@@ -18,7 +18,7 @@ namespace panda {
 
     //! Unlink from a tree.
     virtual void unlink(TTree&);
-    
+
     void updateBranchArray(TTree&);
 
   protected:

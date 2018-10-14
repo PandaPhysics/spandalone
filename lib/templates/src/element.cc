@@ -1,26 +1,17 @@
 #include "../interface/@NAME@.h"
-#include "../interface/BranchName.h"
+#include "../../Framework/interface/IOUtils.h"
 
 namespace @NAMESPACE@ {
 
   @ENUM_STRS@
   @CONSTANTS@
-  
+
   /*static*/
-  panda::utils::BranchList
-  @NAME@::getListOfBranches()
-  {
-    @IF[PHYS_PARENT]@
-    panda::utils::BranchList blist(@PARENT@::getListOfBranches());
-    @ELSE@
-    panda::utils::BranchList blist;
-    @ENDIF@
-
-    blist += {@BNAMES@};
-
-    return blist;
-  }
-
+  BranchList const @NAME@::branchNames{{@BNAMES@}};
+  /*static*/
+  template<>
+  BranchList const @NAME@Collection::branchNames{{@BNAMES_WITH_SIZE@}};
+  
   void
   @NAME@::datastore::allocate(UInt_t _nmax)
   {
@@ -68,11 +59,13 @@ namespace @NAMESPACE@ {
     @PARENT@::datastore::book(_tree, _name, _branches, _bookAs);
 
     @ENDIF@
+    @IF[STD_VECTOR_BRANCHES]@
+    @ELSE@
     TString size;
 
     switch (_bookAs) {
     case aCollection:
-      size = TString::Format("[%s]", SizeBranchName(_name).toString());
+      size = TString::Format("[%s]", BranchName(_name, "size").toString());
       break;
     case aArray:
       size = TString::Format("[%d]", nmax_);
@@ -81,8 +74,9 @@ namespace @NAMESPACE@ {
       size = "";
       break;
     }
+    @ENDIF@
 
-    @DSBOOK@
+    @BOOK@
   }
 
   void
@@ -150,6 +144,8 @@ namespace @NAMESPACE@ {
 
     /* BEGIN CUSTOM assignment */
     /* END CUSTOM */
+
+    return *this;
   }
 
   void

@@ -4,12 +4,12 @@ namespace @NAMESPACE@ {
 
   /*static*/
   TString
-  BranchNameSyntax::generate(BranchName const& _bname)
+  BranchNameSyntax::generate(TString const& _obj, TString const& _br)
   {
     @IF[CUSTOM_BRANCHNAME]@
     @BRANCHNAME_GENERATE@
     @ELSE@
-    return _bname.first + "." + _bname.second;
+    return _obj + "." + _br;
     @ENDIF@
   }
 
@@ -35,7 +35,7 @@ namespace @NAMESPACE@ {
   @IF[CUSTOM_SIZEBRANCH]@
   /*static*/
   TString
-  SizeBranchNameSyntax::generate(BranchName const& _bname)
+  SizeBranchNameSyntax::generate(TString const& _obj, TString const& _br)
   {
     @SIZEBRANCH_GENERATE@
   }

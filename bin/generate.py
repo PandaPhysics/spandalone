@@ -42,7 +42,7 @@ if os.path.exists(args.outdir + '/../../.SCRAM/Environment'):
     with open(args.outdir + '/../../.SCRAM/Environment') as environment:
         if 'CMSSW' in environment.readline():
             # if so, we need to write the build file
-            with open(args.outdir + '/Objects/BuildFile.xml', 'w') as buildFile:
+            with open('{outdir}/{namespace}/BuildFile.xml'.format(outdir = args.outdir, namespace = args.namespace), 'w') as buildFile:
                 buildFile.write('<use name="root"/>\n')
                 buildFile.write('<use name="{PACKAGE}/Framework"/>\n'.format(PACKAGE = os.path.basename(args.outdir)))
                 buildFile.write('<export>\n')
@@ -52,10 +52,15 @@ if os.path.exists(args.outdir + '/../../.SCRAM/Environment'):
             generator.write_linkdef()
 else:
     # running in a standalone environment
-    shutil.rmtree(args.outdir + '/Framework')
-    os.unlink(args.outdir + '/Makefile')
+    try:
+        shutil.rmtree(args.outdir + '/Framework')
+    except OSError:
+        pass
+
     shutil.copytree(os.path.dirname(__file__) + '/../Framework', args.outdir + '/Framework')
-    shutil.copyfile(os.path.dirname(__file__) + '/../Makefile', args.outdir + '/Makefile')
+    with open(os.path.dirname(__file__) + '/../Makefile') as source:
+        with open(args.outdir + '/Makefile', 'w') as out:
+            out.write(source.read().replace('@NAMESPACE@', args.namespace))
 
 generator.write_cpp()
 

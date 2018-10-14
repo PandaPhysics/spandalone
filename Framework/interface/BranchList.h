@@ -14,9 +14,9 @@
 namespace panda {
   namespace utils {
     class NullNameSyntax;
-    template<class T> class BranchListImpl;
+    template<class T, class S> class BranchListImpl;
 
-    typedef BranchListImpl<NullNameSyntax> BranchSubList;
+    typedef BranchListImpl<NullNameSyntax, NullNameSyntax> BranchSubList;
 
     //! List of branch names
     /*!
@@ -99,12 +99,13 @@ namespace panda {
       int verbosity_{0};
     };
 
-    template<class T>
+    template<class T, class S = T>
     class BranchListImpl : public BranchList {
     public:
       typedef T NameSyntax;
-      typedef BranchNameImpl<T> name_type;
-      typedef BranchListImpl<T> self_type;
+      typedef S SizeNameSyntax;
+      typedef BranchNameImpl<T, S> name_type;
+      typedef BranchListImpl<T, S> self_type;
 
       BranchListImpl() {}
       BranchListImpl(std::initializer_list<TString>);
@@ -123,20 +124,20 @@ namespace panda {
       std::vector<name_type> names_;
     };
 
-    template<class T>
-    BranchListImpl<T>::BranchListImpl(std::initializer_list<TString> il)
+    template<class T, class S/* = T*/>
+    BranchListImpl<T, S>::BranchListImpl(std::initializer_list<TString> _il)
     {
-      for (auto& name : il)
+      for (auto& name : _il)
         names_.emplace_back(name);
 
       for (auto& name : names_)
         nameRefs_.push_back(&name);
     }
 
-    template<class T>
+    template<class T, class S/* = T*/>
     template<class... Args>
     void
-    BranchListImpl<T>::emplace_back(Args&&... args)
+    BranchListImpl<T, S>::emplace_back(Args&&... args)
     {
       names_.emplace_back(args...);
       
@@ -146,9 +147,9 @@ namespace panda {
         nameRefs_.push_back(&name);
     }
 
-    template<class T>
-    BranchListImpl<T>&
-    BranchListImpl<T>::operator+=(BranchListImpl<T> const& _rhs)
+    template<class T, class S/* = T*/>
+    BranchListImpl<T, S>&
+    BranchListImpl<T, S>::operator+=(BranchListImpl<T, S> const& _rhs)
     {
       names_.insert(names_.end(), _rhs.names_.begin(), _rhs.names_.end());
       
@@ -161,11 +162,11 @@ namespace panda {
     }
 
     /*static*/
-    template<class T>
-    BranchListImpl<T>
-    BranchListImpl<T>::makeList(TTree& _tree)
+    template<class T, class S/* = T*/>
+    BranchListImpl<T, S>
+    BranchListImpl<T, S>::makeList(TTree& _tree)
     {
-      BranchListImpl<T> blist;
+      BranchListImpl<T, S> blist;
     
       auto* branches(_tree.GetListOfBranches());
       for (auto* br : *branches)

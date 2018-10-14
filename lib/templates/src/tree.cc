@@ -1,6 +1,10 @@
 #include "../interface/@NAME@.h"
+#include "../../Framework/interface/IOUtils.h"
 
 namespace @NAMESPACE@ {
+
+  /*static*/
+  BranchList const @NAME@::branchNames{{@BNAMES@}};
 
   @NAME@::@NAME@() :
     @PARENT@()
@@ -61,28 +65,6 @@ namespace @NAMESPACE@ {
     @DUMP@
   }
 
-  /*static*/
-  panda::utils::BranchList
-  @NAME@::getListOfBranches(Bool_t _direct/* = kFALSE*/)
-  {
-    panda::utils::BranchList blist;
-    
-    @IF[PHYS_PARENT]@
-    blist += @PARENT@::getListOfBranches(_direct);
-    @ENDIF@
-
-    blist += {@BNAMES@};
-
-    if (!_direct) {
-      @OBJ_BLIST@
-    }
-
-    /* BEGIN CUSTOM getListOfBranches */
-    /* END CUSTOM */
-
-    return blist;
-  }
-
   /*protected*/
   void
   @NAME@::doSetStatus_(TTree& _tree, panda::utils::BranchList const& _branches)
@@ -92,28 +74,6 @@ namespace @NAMESPACE@ {
 
     @ENDIF@
     @SET_STATUS@
-  }
-  
-  /*protected*/
-  panda::utils::BranchList
-  @NAME@::doGetStatus_(TTree& _tree) const
-  {
-    @IF[PHYS_PARENT]@
-    panda::utils::BranchList blist(@PARENT@::doGetStatus(_tree));
-    @ELSE@
-    panda::utils::BranchList blist;
-    @ENDIF@
-
-    @GET_STATUS@
-
-    return blist;
-  }
-  
-  /*protected*/
-  panda::utils::BranchList
-  @NAME@::doGetBranchNames_() const
-  {
-    return getListOfBranches(true);
   }
   
   /*protected*/

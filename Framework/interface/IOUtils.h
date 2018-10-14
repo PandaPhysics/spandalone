@@ -35,14 +35,6 @@ namespace panda {
      * 1  status is changed
      */
     Int_t setStatus(TTree&, BranchName const&, BranchList const&);
-    //! Get the status of a branch
-    /*!
-     * Return values:
-     * -1 branch does not exist
-     * 0  branch is disabled
-     * 1  branch is enabled
-     */
-    Int_t getStatus(TTree& tree, BranchName const& bName) { return checkStatus(tree, bName, true); }
     //! Set address
     /*!
      * Return values:

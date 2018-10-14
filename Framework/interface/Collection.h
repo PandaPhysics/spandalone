@@ -29,8 +29,8 @@ namespace panda {
     typedef utils::Iterator<self_type, false> iterator;
     typedef utils::Iterator<self_type, true> const_iterator;
 
-    Collection(char const* name = "", UInt_t initialMax = 64) : base_type(name, sizeof(E), kFALSE) { allocate_(initialMax); }
-    Collection(self_type const& src) : base_type(src.ContainerBase::name_, sizeof(E), kFALSE) { allocate_(src.data.nmax()); copy(src); }
+    Collection(char const* name = "", UInt_t initialMax = 64) : base_type(name, sizeof(E), kFALSE), sizeBranchName_(name, "size") { allocate_(initialMax); }
+    Collection(self_type const& src) : base_type(src.ContainerBase::name_, sizeof(E), kFALSE), sizeBranchName_(src.ContainerBase::name_, "size") { allocate_(src.data.nmax()); copy(src); }
     ~Collection();
     self_type& operator=(self_type const& rhs) { copy(rhs); return *this; }
 
@@ -83,17 +83,21 @@ namespace panda {
 
     std::vector<UInt_t> sort(ContainerBase::Comparison const&) override;
 
+    panda::utils::BranchList const& getBranchNames() const override { return self_type::branchNames; }
+
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout) const override;
 
     data_type data{};
 
   protected:
-    Collection(char const* name, UInt_t unitSize, Bool_t dummy) : base_type(name, unitSize, kFALSE) {}
+    Collection(char const* name, UInt_t unitSize, Bool_t dummy) : base_type(name, unitSize, kFALSE), sizeBranchName_(name, "size") {}
 
     void reallocate_(UInt_t) override;
 
-    TString sizeBranchName_() const override;
+    utils::BranchName& getSizeBranchName_() override { return sizeBranchName_; }
+
+    static typename value_type::BranchList const branchNames;
 
   private:
     value_type* addr_(unsigned idx = 0);
@@ -110,6 +114,8 @@ namespace panda {
     template<class T = E>
     typename std::enable_if<!std::is_constructible<T>::value>::type
     deallocate_(value_type* addr, data_type&);
+
+    typename value_type::BranchName sizeBranchName_;
   };
 
   template<class E>
@@ -155,7 +161,7 @@ namespace panda {
     for (UInt_t iP(0); iP != CollectionBase::size(); ++iP)
       (*this)[iP] = _src[iP];
 
-    ContainerBase::setName(_src.name_);
+    CollectionBase::setName(_src.name_);
   }
 
   template<class E>
@@ -237,22 +243,6 @@ namespace panda {
 
     // deallocate old space
     deallocate_(tmpArray, tmpStore);
-  }
-
-  /*protected*/
-  /* template<class E> */
-  /* template<class T/\* = E::base_type*\/> */
-  /* typename std::enable_if<std::is_same<T, Element>::value, TString>::type */
-  /* Collection<E>::sizeBranchName_() const */
-  /* { */
-  /*   return value_type::datastore::size_name_type(this->getName()).fullName(); */
-  /* } */
-  template<class E>
-  TString
-  Collection<E>::sizeBranchName_() const
-  {
-    typename value_type::datastore::size_name_type sizeName(this->getName());
-    return sizeName.fullName();
   }
 
   /*private*/

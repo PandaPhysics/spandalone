@@ -1,5 +1,5 @@
 #include "../interface/@NAME@.h"
-#include "../interface/BranchName.h"
+#include "../../Framework/interface/IOUtils.h"
 
 namespace @NAMESPACE@ {
 
@@ -7,19 +7,7 @@ namespace @NAMESPACE@ {
   @CONSTANTS@
 
   /*static*/
-  panda::utils::BranchList
-  @NAME@::getListOfBranches()
-  {
-    @IF[PHYS_PARENT]@
-    panda::utils::BranchList blist(@PARENT@::getListOfBranches());
-    @ELSE@
-    panda::utils::BranchList blist;
-    @ENDIF@
-
-    blist += {@BNAMES@};
-
-    return blist;
-  }
+  BranchList const @NAME@::branchNames{{@BNAMES@}};
     
   @IF[INSTANTIABLE]@
   @NAME@::@NAME@(char const* _name/* = ""*/) :

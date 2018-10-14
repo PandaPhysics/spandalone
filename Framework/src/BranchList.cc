@@ -72,7 +72,7 @@ panda::utils::BranchList::subList(TString const& _objName) const
     else if (bname->first == _objName)
       sublist.emplace_back(bname->first, bname->second);
   }
-    
+
   return sublist;
 }
 

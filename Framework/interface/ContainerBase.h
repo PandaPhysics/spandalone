@@ -22,7 +22,7 @@ namespace panda {
     ContainerBase& operator=(ContainerBase const&) = delete;
 
     char const* getName() const final { return name_; }
-    void setName(char const* name) final { name_ = name; }
+    void setName(char const* name) override { name_ = name; }
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout) const override;
 

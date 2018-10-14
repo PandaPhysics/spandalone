@@ -26,6 +26,7 @@ namespace panda {
     Int_t getEntry(UInt_t, Long64_t entry, Bool_t localEntry = kFALSE) final;
     Int_t fill(TTree&) final;
     void init() final { clear(); }
+    void setName(char const*) final;
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout) const override;
     void unlink(TTree&) final;
@@ -66,7 +67,7 @@ namespace panda {
      * Collection<E> reimplements this function with the branch name rule in the namespace
      * prvided from E
      */
-    virtual utils::BranchName const& sizeBranchName_() const = 0;
+    virtual utils::BranchName& getSizeBranchName_() = 0;
 
   private:
     void doSetAddress_(TTree&, utils::BranchList const&, Bool_t setStatus, Bool_t asInput);

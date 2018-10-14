@@ -27,7 +27,7 @@ namespace panda {
       BranchName& operator=(BranchName const&);
 
       //! Generate a string representation of the branch name (without the veto "!")
-      virtual TString toString() const { return ""; }
+      virtual TString toString(TString const& = "") const { return ""; }
       operator TString() const { return toString(); }
 
       //! Did the name start with a '!'?
@@ -42,37 +42,63 @@ namespace panda {
       bool isVeto_{false};
     };
 
-    template<class T>
+    template<class T, class S = T>
     class BranchNameImpl : public BranchName {
     public:
       typedef T NameSyntax;
+      typedef S SizeNameSyntax;
 
-      BranchNameImpl(TString const& s, TString const& b = "", bool isVeto = false);
-      BranchNameImpl(std::string const& s, std::string const& b = "", bool isVeto = false) : BranchNameImpl(s.c_str(), b.c_str(), isVeto) {}
+      BranchNameImpl(char const* s, char const* b = "", bool isVeto = false);
 
-      TString toString() const final { NameSyntax::generate(*this); }
+      TString toString(TString const& objName = "") const final;
     };
 
-    template<class T>
-    BranchNameImpl<T>::BranchNameImpl(TString const& _name, TString const& _bname/* = ""*/, bool _isVeto/* = false*/) :
+    template<class T, class S/* = T*/>
+    BranchNameImpl<T, S>::BranchNameImpl(char const* _name, char const* _bname/* = ""*/, bool _isVeto/* = false*/) :
       BranchName(_isVeto)
     {
       TString name(_name);
 
       if (name(0) == '!') {
         isVeto_ = true; // regardless of _isVeto
-        name = name(1, _name.Length());
+        name = name(1, name.Length());
       }
 
-      core_type::operator=(NameSyntax::parse(name));
+      auto parsed(NameSyntax::parse(name));
+      if (parsed.first.Length() == 0) {
+        // maybe this was a size branch?
+        parsed = SizeNameSyntax::parse(name);
+      }
+      if (parsed.first.Length() == 0)
+        throw std::runtime_error(TString::Format("Invalid branch name %s", name.Data()).Data());
+
+      core_type::operator=(parsed);
 
       if (this->second == "")
         this->second = _bname;
     }
 
+    template<class T, class S/* = T*/>
+    TString
+    BranchNameImpl<T, S>::toString(TString const& _objName/* = ""*/) const
+    {
+      if (this->second.Length() == 0 && _objName.Length() != 0) {
+        if (this->first == "size")
+          return SizeNameSyntax::generate(_objName, this->first);
+        else
+          return NameSyntax::generate(_objName, this->first);
+      }
+      else {
+        if (this->second == "size")
+          return SizeNameSyntax::generate(this->first, this->second);
+        else
+          return NameSyntax::generate(this->first, this->second);
+      }
+    }
+
     class NullNameSyntax {
     public:
-      static TString generate(BranchName const&) { return ""; }
+      static TString generate(TString const&, TString const&) { return ""; }
       static std::pair<TString, TString> parse(TString const&) { return std::pair<TString, TString>("", ""); }
     };
 

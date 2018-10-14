@@ -2,6 +2,7 @@
 #define @NAMESPACE@_@NAME@_h
 
 #include "Constants.h"
+#include "BranchName.h"
 @INCLUDES@
 #include "../../Framework/interface/Array.h"
 #include "../../Framework/interface/Collection.h"
@@ -34,6 +35,9 @@ namespace @NAMESPACE@ {
 
     typedef @PARENT@ base_type;
 
+    typedef @NAMESPACE@::BranchName BranchName;
+    typedef @NAMESPACE@::BranchList BranchList;
+
     @IF[INSTANTIABLE]@
     @NAME@(char const* name = "");
     @NAME@(@NAME@ const&);
@@ -43,8 +47,9 @@ namespace @NAMESPACE@ {
     @NAME@& operator=(@NAME@ const&);
     void destructor(Bool_t recursive = kFALSE);
 
+    panda::utils::BranchList const& getBranchNames() const override { return @NAME@::branchNames; }
+
     static char const* typeName() { return "@NAME@"; }
-    static panda::utils::BranchList getListOfBranches();
 
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout) const override;
@@ -55,6 +60,8 @@ namespace @NAMESPACE@ {
 
     /* BEGIN CUSTOM classdef */
     /* END CUSTOM */
+
+    static @NAMESPACE@::BranchList const branchNames;
 
   protected:
     @PROTECTED_MEMBERS@
@@ -72,6 +79,13 @@ namespace @NAMESPACE@ {
   /* BEGIN CUSTOM global */
   /* END CUSTOM */
 
+}
+
+namespace panda {
+  // Template specialization declaration
+  /*static*/
+  template<>
+  @NAMESPACE@::BranchList const Collection<@NAMESPACE@::@NAME@>::branchNames;
 }
 
 #endif

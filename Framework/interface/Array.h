@@ -68,6 +68,8 @@ namespace panda {
 
     std::vector<UInt_t> sort(ContainerBase::Comparison const&) override;
 
+    panda::utils::BranchList const& getBranchNames() const override { return value_type::branchNames; }
+
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout) const override;
 
