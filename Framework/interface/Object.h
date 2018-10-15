@@ -105,7 +105,7 @@ namespace panda {
     virtual void print(std::ostream& out = std::cout, UInt_t level = 1) const { dump(out); }
 
     //! Dump the object content.
-    virtual void dump(std::ostream& = std::cout) const {}
+    virtual void dump(std::ostream& = std::cout, UInt_t indent = 0) const {}
   };
 
 }

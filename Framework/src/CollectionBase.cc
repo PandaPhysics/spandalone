@@ -48,7 +48,7 @@ panda::CollectionBase::setAddress(TTree& _tree, utils::BranchList const& _branch
 void
 panda::CollectionBase::book(TTree& _tree, utils::BranchList const& _branches/* = {"*"}*/)
 {
-  if (!_branches.matchesAny(getBranchNames()))
+  if (!_branches.includes(utils::BaseBranchName(name_)))
     return;
 
   for (auto& output : outputs_) {
@@ -133,11 +133,12 @@ panda::CollectionBase::print(std::ostream& _out/* = std::cout*/, UInt_t _level/*
 }
 
 void
-panda::CollectionBase::dump(std::ostream& _out/* = std::cout*/) const
+panda::CollectionBase::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
 {
-  _out << "size_ = " << size_ << std::endl;
-  _out << "sizeIn_ = " << sizeIn_ << std::endl;
-  ContainerBase::dump(_out);
+  std::string indentation(_indent * 2, ' ');
+  _out << indentation << "size_ = " << size_ << std::endl;
+  _out << indentation << "sizeIn_ = " << sizeIn_ << std::endl;
+  ContainerBase::dump(_out, _indent);
 }
 
 void
@@ -212,7 +213,10 @@ panda::CollectionBase::prepareFill(TTree& _tree)
 void
 panda::CollectionBase::doSetAddress_(TTree& _tree, utils::BranchList const& _branches, Bool_t _setStatus, Bool_t _asInput)
 {
-  if (!_branches.matchesAny(getBranchNames()))
+  if (!_branches.includes(utils::BaseBranchName(name_)))
+    return;
+
+  if (_branches.vetoes(getSizeBranchName_()))
     return;
 
   Int_t sizeStatus(0);

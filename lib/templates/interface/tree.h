@@ -17,7 +17,7 @@ namespace @NAMESPACE@ {
     panda::utils::BranchList const& getBranchNames() const override { return @NAME@::branchNames; }
     
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
-    void dump(std::ostream& = std::cout) const override;
+    void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
 
     @FUNCTIONS@
 

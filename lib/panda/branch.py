@@ -255,4 +255,4 @@ class Branch(Definition):
         translation = Branch.TYPE_MAP.get(translations.get(self.type)) if not self.is_array() else None
         cast = 'static_cast<const {outtype}>({name})'.format(outtype = translation, name = self.name) if translation else self.name
 
-        out.writeline('_out << "{name} = " << {cast} << std::endl;'.format(name = self.name, cast = cast))
+        out.writeline('_out << indentation << "{name} = " << {cast} << std::endl;'.format(name = self.name, cast = cast))

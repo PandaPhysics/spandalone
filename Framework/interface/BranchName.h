@@ -106,6 +106,8 @@ namespace panda {
       static std::pair<TString, TString> parse(TString const& n) { return std::pair<TString, TString>(n, ""); }
     };
 
+    typedef BranchNameImpl<BaseNameSyntax> BaseBranchName;
+
   }
 }
 

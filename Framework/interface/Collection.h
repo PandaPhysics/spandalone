@@ -85,8 +85,10 @@ namespace panda {
 
     panda::utils::BranchList const& getBranchNames() const override { return self_type::branchNames; }
 
+    static char const* typeName() { return (TString(value_type::typeName()) + "Collection").Data(); }
+
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
-    void dump(std::ostream& = std::cout) const override;
+    void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
 
     data_type data{};
 
@@ -214,10 +216,9 @@ namespace panda {
 
   template<class E>
   void
-  Collection<E>::dump(std::ostream& _out/* = std::cout*/) const
+  Collection<E>::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
   {
-    _out << E::typeName() << "Collection" << std::endl;
-    CollectionBase::dump(_out);
+    CollectionBase::dump(_out, _indent);
   }
 
   /*protected*/

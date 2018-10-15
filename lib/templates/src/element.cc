@@ -167,10 +167,10 @@ namespace @NAMESPACE@ {
   }
 
   void
-  @NAME@::dump(std::ostream& _out/* = std::cout*/) const
+  @NAME@::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
   {
-    @PARENT@::dump(_out);
-
+    @PARENT@::dump(_out, _indent);
+    std::string indentation(_indent * 2, ' ');
     @DUMP@
   }
 

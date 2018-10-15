@@ -1,4 +1,5 @@
 import os
+import re
 from panda import *
 
 template_path = os.path.dirname(os.path.dirname(__file__)) + '/templates'
@@ -104,8 +105,13 @@ class Generator(object):
                 if line.startswith('<require '):
                     continue
 
-                if line.startswith('<std_vector_branches'):
-                    self.std_vector_branches = eval(line.strip().replace('<std_vector_branches ', '').replace('>', ''))
+                if line.startswith('<namespace'):
+                    matches = re.match('<namespace *(.+)>', line.strip())
+                    self.namespace = matches.group(1)
+                    continue
+
+                if line.startswith('<std_vector_branches>'):
+                    self.std_vector_branches = True
                     continue
 
                 if line.startswith('<branch_name>'):
@@ -167,6 +173,12 @@ class Generator(object):
                 print 'Skipping unrecognized pattern:', line
         
             configFile.close()
+
+        for objdef in self.phobjects:
+            objdef.make_inheritance_chain()
+
+        for treedef in self.trees:
+            treedef.make_inheritance_chain()
 
     def write_cpp(self):
         """
@@ -302,7 +314,7 @@ class Generator(object):
             'PROTECTED_MEMBERS': protected_members,
         }
 
-        if not objdef.is_singlet():
+        if not objdef.is_singlet:
             buf = BufferOutput()
             if self.std_vector_branches:
                 prot = BufferOutput()
@@ -326,7 +338,7 @@ class Generator(object):
 
         outname = '{outdir}/{namespace}/interface/{obj}.h'.format(outdir = self.outdir, namespace = self.namespace, obj = objdef.name)
         header = FileOutput(outname, preserve_custom = self.preserve_custom)
-        if objdef.is_singlet():
+        if objdef.is_singlet:
             header.write_from_template(template_path + '/interface/singlet.h', replacements)
         else:
             header.write_from_template(template_path + '/interface/element.h', replacements)
@@ -352,8 +364,8 @@ class Generator(object):
         objdef.write_initializers_copy(initializers_copy)
 
         bnames_list = []
-        for cls in objdef.inheritance():
-            bnames_list.extend(reversed([b.name for b in objdef.branches if '!' not in b.modifier]))
+        for cls in [objdef] + objdef.inheritance:
+            bnames_list.extend(reversed([b.name for b in cls.branches if '!' not in b.modifier]))
         bnames_list.reverse()
 
         bnames = ', '.join('"{name}"'.format(name = b) for b in bnames_list)
@@ -367,7 +379,7 @@ class Generator(object):
         init = BufferOutput()
         dump = BufferOutput()
 
-        if objdef.is_singlet():
+        if objdef.is_singlet:
             context = 'Singlet'
             dscontext = 'Singlet'
         else:
@@ -397,7 +409,7 @@ class Generator(object):
             branch.write_init(init, context = context)
             branch.write_dump(dump)
 
-            if not objdef.is_singlet():
+            if not objdef.is_singlet:
                 branch.write_standard_ctor(standard_ctor, context = context)
                 branch.write_allocate(allocate, context = dscontext, use_std_vector = self.std_vector_branches)
                 branch.write_deallocate(deallocate, context = dscontext, use_std_vector = self.std_vector_branches)
@@ -432,7 +444,7 @@ class Generator(object):
             'FUNCTIONS': functions
         }
 
-        if not objdef.is_singlet():
+        if not objdef.is_singlet:
             destructor = BufferOutput()
             objdef.write_destructor(destructor)
 
@@ -450,7 +462,7 @@ class Generator(object):
 
         outname = '{outdir}/{namespace}/src/{obj}.cc'.format(outdir = self.outdir, namespace = self.namespace, obj = objdef.name)
         source = FileOutput(outname, preserve_custom = self.preserve_custom)
-        if objdef.is_singlet():
+        if objdef.is_singlet:
             source.write_from_template(template_path + '/src/singlet.cc', replacements)
         else:
             source.write_from_template(template_path + '/src/element.cc', replacements)
@@ -564,10 +576,17 @@ class Generator(object):
         dump = BufferOutput()
         for branch in treedef.branches:
             branch.write_dump(dump)
+        dump.writeline('_out << std::endl;')
         for objbranch in treedef.objbranches:
+            dump.writeline('_out << indentation << "{{" << {name}.getName() << "}}: " << {name}.typeName() << std::endl;'.format(name = objbranch.name))
             objbranch.write_dump(dump)
 
-        bnames = ', '.join('"{name}"'.format(name = branch.name) for branch in treedef.branches if '!' not in branch.modifier)
+        bnames_list = []
+        for cls in [treedef] + treedef.inheritance:
+            bnames_list.extend(reversed([b.name for b in cls.branches if '!' not in b.modifier]))
+        bnames_list.reverse()
+
+        bnames = ', '.join('"{name}"'.format(name = b) for b in bnames_list)
 
         functions = BufferOutput()
         for function in treedef.functions:
@@ -638,7 +657,7 @@ class Generator(object):
                     generics.writeline('#pragma link C++ class {type}+;'.format(type = branch.type))
                     generics.writeline('#pragma link C++ class std::vector<{type}>+;'.format(type = branch.type))
 
-            if not objdef.is_singlet():
+            if not objdef.is_singlet:
                 containers.writeline('#pragma link C++ class panda::Array<@NAMESPACE@::{name}>;'.format(name = objdef.name))
                 containers.writeline('#pragma link C++ class panda::Collection<@NAMESPACE@::{name}>;'.format(name = objdef.name))
                 containers.writeline('#pragma link C++ class panda::Ref<@NAMESPACE@::{name}>;'.format(name = objdef.name))

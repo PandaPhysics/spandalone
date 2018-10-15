@@ -17,14 +17,14 @@ panda::ContainerBase::print(std::ostream& _out/* = std::cout*/, UInt_t _level/* 
 }
 
 void
-panda::ContainerBase::dump(std::ostream& _out/* = std::cout*/) const
+panda::ContainerBase::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
 {
-  _out << "name_ = " << name_ << std::endl;
-  _out << "unitSize_ = " << unitSize_ << std::endl;
-  _out << "array_ (" << (void*)(array_) << "): " << std::endl;
+  std::string indentation(_indent * 2, ' ');
+  _out << indentation << "unitSize_ = " << unitSize_ << std::endl;
+  _out << indentation << "array_ (" << (void*)(array_) << "): " << std::endl;
   for (unsigned iE(0); iE != size(); ++iE) {
-    _out << "[" << iE << "]" << std::endl;
-    elemAt(iE).dump(_out);
+    _out << indentation << "[" << iE << "]" << std::endl;
+    elemAt(iE).dump(_out, _indent + 1);
   }
   _out << std::endl;
 }

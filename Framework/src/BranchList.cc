@@ -66,11 +66,8 @@ panda::utils::BranchList::subList(TString const& _objName) const
     
   // loop over my branch names
   for (auto* bname : nameRefs_) {
-    // if the object name is not * and not objName, skip
-    if (bname->first == "*")
-      sublist.emplace_back(bname->first, bname->second);
-    else if (bname->first == _objName)
-      sublist.emplace_back(bname->first, bname->second);
+    if (bname->first == "*" || bname->first == _objName)
+      sublist.emplace_back(bname->first, bname->second, bname->isVeto());
   }
 
   return sublist;

@@ -56,12 +56,11 @@ namespace @NAMESPACE@ {
   }
 
   void
-  @NAME@::dump(std::ostream& _out/* = std::cout*/) const
+  @NAME@::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
   {
-    @IF[PHYS_PARENT]@
-    @PARENT@::dump(_out);
+    std::string indentation(_indent * 2, ' ');
 
-    @ENDIF@
+    @PARENT@::dump(_out, _indent);
     @DUMP@
   }
 

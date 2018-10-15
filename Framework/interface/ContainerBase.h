@@ -24,7 +24,7 @@ namespace panda {
     char const* getName() const final { return name_; }
     void setName(char const* name) override { name_ = name; }
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
-    void dump(std::ostream& = std::cout) const override;
+    void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
 
     virtual UInt_t size() const = 0;
     virtual Element::datastore& getData() = 0;

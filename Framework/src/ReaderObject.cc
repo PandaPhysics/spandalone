@@ -115,7 +115,7 @@ panda::ReaderObject::updateBranchArray(TTree& _tree)
 
       branchArray.clear();
       for (auto& bname : getBranchNames())
-        branchArray.push_back(_tree.GetBranch(bname.toString())); // allow nullptrs
+        branchArray.push_back(_tree.GetBranch(bname.toString(getName()))); // allow nullptrs
     }
   }
 }

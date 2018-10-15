@@ -70,8 +70,10 @@ namespace panda {
 
     panda::utils::BranchList const& getBranchNames() const override { return value_type::branchNames; }
 
+    static char const* typeName() { return (TString(value_type::typeName()) + "Array").Data(); }
+
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
-    void dump(std::ostream& = std::cout) const override;
+    void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
 
     typename value_type::datastore data{};
 
@@ -173,10 +175,10 @@ namespace panda {
 
   template<class E>
   void
-  Array<E>::dump(std::ostream& _out/* = std::cout*/) const
+  Array<E>::dump(std::ostream& _out/* = std::cout*/, UInt_t _indent/* = 0*/) const
   {
-    _out << E::typeName() << "Array(" << ArrayBase::size() << ")" << std::endl;
-    ContainerBase::dump(_out);
+    _out << std::string(_indent * 2, ' ') << E::typeName() << "Array(" << ArrayBase::size() << ")" << std::endl;
+    ContainerBase::dump(_out, _indent);
   }
 
   /*private*/

@@ -28,7 +28,7 @@ namespace panda {
     void init() final { clear(); }
     void setName(char const*) final;
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
-    void dump(std::ostream& = std::cout) const override;
+    void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
     void unlink(TTree&) final;
     UInt_t size() const final { return size_; }
 

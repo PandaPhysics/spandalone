@@ -1,9 +1,9 @@
 from base import Definition
 from obj import Object
 from branch import Branch
-from output import FileOutput
+from inheritable import Inheritable
 
-class PhysicsObject(Definition, Object):
+class PhysicsObject(Definition, Object, Inheritable):
     """
     Physics object definition. Definition file syntax:
     
@@ -14,33 +14,28 @@ class PhysicsObject(Definition, Object):
 
     _known_objects = []
 
-    @staticmethod
-    def get(name):
-        try:
-            return next(o for o in PhysicsObject._known_objects if o.name == name)
-        except StopIteration:
-            raise KeyError('PhysicsObject.get({name})'.format(name = name))
-
     def __init__(self, line, source):
         """
         Argument: re match object
         """
 
         Definition.__init__(self, line, '\\[([A-Z][a-zA-Z0-9]+)(>[A-Z][a-zA-Z0-9]+|)(\\:SINGLE|)\\] *$')
+        Inheritable.__init__(self)
+
         PhysicsObject._known_objects.append(self)
 
         # is this a singlet?
         if self.matches.group(3) == ':SINGLE':
             self.parent = 'Singlet'
-            self._singlet = True
+            self.is_singlet = True
         else:
             self.parent = 'Element'
-            self._singlet = False
+            self.is_singlet = False
 
         # if >parent is present, update the parent class name
         if self.matches.group(2):
             self.parent = self.matches.group(2)[1:]
-            self._singlet = None
+            self.is_singlet = None
 
         Object.__init__(self, self.matches.group(1), source)
 
@@ -49,21 +44,15 @@ class PhysicsObject(Definition, Object):
         else:
             self.instantiable = False
 
-    def is_singlet(self):
-        if self._singlet is None:
-            return PhysicsObject.get(self.parent).is_singlet()
-        else:
-            return self._singlet
+    def make_inheritance_chain(self):
+        Inheritable._make_inheritance_chain(self, PhysicsObject._known_objects)
 
-    def inheritance(self):
-        inheritance = [self]
-        while True:
-            try:
-                inheritance.insert(0, PhysicsObject.get(inheritance[0].parent))
-            except KeyError:
-                break
-
-        return inheritance
+        if self.is_singlet is None:
+            # maybe the ancestor is a singlet
+            for obj in self.inheritance:
+                if obj.is_singlet:
+                    self.is_singlet = True
+                    break
 
     def write_header_includes(self, out):
         if self.parent == 'Element':
@@ -85,12 +74,7 @@ class PhysicsObject(Definition, Object):
                 out.writeline(stmt)
 
     def write_datastore_inherited_members(self, out, use_std_vector = False):
-        inheritance = self.inheritance()
-
-        for ancestor in inheritance:
-            if ancestor is self:
-                break
-
+        for ancestor in self.inheritance:
             if len(ancestor.branches) != 0:
                 out.writeline('/* {name}'.format(name = ancestor.name))
                 for branch in ancestor.branches:
@@ -108,17 +92,12 @@ class PhysicsObject(Definition, Object):
                 branch.write_vectorptr_decl(out)
 
     def write_inherited_public_members(self, out):
-        inheritance = self.inheritance()
-
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
         else:
             context = 'Element'
 
-        for ancestor in inheritance:
-            if ancestor is self:
-                break
-
+        for ancestor in self.inheritance:
             branches = []
 
             for branch in ancestor.branches:
@@ -133,7 +112,7 @@ class PhysicsObject(Definition, Object):
                 out.writeline('*/')
 
     def write_public_members(self, out):
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
         else:
             context = 'Element'
@@ -145,17 +124,12 @@ class PhysicsObject(Definition, Object):
             branch.write_decl(out, context = context)
 
     def write_inherited_protected_members(self, out):
-        inheritance = self.inheritance()
-
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
         else:
             context = 'Element'
 
-        for ancestor in inheritance:
-            if ancestor is self:
-                break
-
+        for ancestor in self.inheritance:
             branches = []
             for branch in ancestor.branches:
                 if hasattr(branch, 'refname') or not branch.name.endswith('_'):
@@ -169,7 +143,7 @@ class PhysicsObject(Definition, Object):
                 out.writeline('*/')
 
     def write_protected_members(self, out):
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
         else:
             context = 'Element'
@@ -184,7 +158,7 @@ class PhysicsObject(Definition, Object):
         if not self.instantiable:
             return
 
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
             initializers = ['{parent}(_name)'.format(parent = self.parent)]
         else:
@@ -208,7 +182,7 @@ class PhysicsObject(Definition, Object):
         if not self.instantiable:
             return
 
-        if self.is_singlet():
+        if self.is_singlet:
             context = 'Singlet'
             initializers = ['{parent}(_src.name_)'.format(parent = self.parent)]
         else:
@@ -221,7 +195,7 @@ class PhysicsObject(Definition, Object):
         out.writelines(initializers, ',')
 
     def write_initializers_element(self, out):
-        if self.is_singlet():
+        if self.is_singlet:
             return
 
         initializers = ['{parent}(_data, _idx)'.format(parent = self.parent)]

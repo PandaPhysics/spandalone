@@ -32,12 +32,9 @@ class ObjBranch(Definition):
 
         try:
             # is this a valid object?
-            objdef = PhysicsObject.get(self.objname)
-        except KeyError:
+            objdef = next(o for o in PhysicsObject._known_objects if o.name == self.objname)
+        except StopIteration:
             raise Definition.NoMatch()
-
-        if objdef.is_singlet() and (self.conttype != '' or self.init_size != ''):
-            raise RuntimeError('Cannot create container of object ' + objdef.name)
 
         if self.conttype == 'Array' and self.init_size == '':
             raise RuntimeError('Array object ' + objdef.name + ' needs a size')
@@ -82,4 +79,5 @@ class ObjBranch(Definition):
         out.writeline('{name}.init();'.format(name = self.name))
 
     def write_dump(self, out):
-        out.writeline('{name}.dump(_out);'.format(name = self.name))
+        out.writeline('{name}.dump(_out, _indent);'.format(name = self.name))
+        out.writeline('_out << std::endl;')

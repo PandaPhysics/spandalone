@@ -156,4 +156,4 @@ class RefBranch(Branch):
             out.writeline('}')
 
     def write_dump(self, out):
-        out.writeline('_out << "{name} = " << {name} << std::endl;'.format(name = self.refname))
+        out.writeline('_out << indentation << "{name} = " << {name} << std::endl;'.format(name = self.refname))

@@ -131,4 +131,4 @@ class GenericBranch(Branch):
         out.writeline(self.initializer)
 
     def write_dump(self, out):
-        out.writeline('_out << "{name} = ({type} object)" << std::endl;'.format(name = self.name, type = self.type))
+        out.writeline('_out << indentation << "{name} = ({type} object)" << std::endl;'.format(name = self.name, type = self.type))
