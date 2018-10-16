@@ -70,7 +70,7 @@ namespace panda {
 
     panda::utils::BranchList const& getBranchNames() const override { return value_type::branchNames; }
 
-    static char const* typeName() { return (TString(value_type::typeName()) + "Array").Data(); }
+    static TString typeName() { return value_type::typeName() + "Array"; }
 
     void print(std::ostream& = std::cout, UInt_t level = 1) const override;
     void dump(std::ostream& = std::cout, UInt_t indent = 0) const override;
