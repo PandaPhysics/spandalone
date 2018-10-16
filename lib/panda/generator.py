@@ -16,6 +16,12 @@ class Generator(object):
 
         self.std_vector_branches = False
 
+    def objects_dir(self):
+        if self.namespace == 'panda':
+            return self.outdir + '/Objects' # historical
+        else:
+            return self.outdir + '/' + self.namespace
+
     def add_config(self, path):
         if not path.endswith('.def'):
             raise RuntimeError('Definition file must have file name ending with .def')
@@ -205,7 +211,7 @@ class Generator(object):
 
     def write_constants_header(self):
         # Global constants and functions (header)
-        outname = '{outdir}/{namespace}/interface/Constants.h'.format(outdir = self.outdir, namespace = self.namespace)
+        outname = '{dirname}/interface/Constants.h'.format(dirname = self.objects_dir())
         outfile = FileOutput(outname, preserve_custom = self.preserve_custom)
 
         includes = BufferOutput()
@@ -250,7 +256,7 @@ class Generator(object):
 
     def write_constants_src(self):
         # Global constants and functions (source)
-        outname = '{outdir}/{namespace}/src/Constants.cc'.format(outdir = self.outdir, namespace = self.namespace)
+        outname = '{dirname}/src/Constants.cc'.format(dirname = self.objects_dir())
         outfile = FileOutput(outname, preserve_custom = self.preserve_custom)
 
         enums = BufferOutput()
@@ -336,7 +342,7 @@ class Generator(object):
 
             replacements['DATASTORE_MEMBERS'] = buf
 
-        outname = '{outdir}/{namespace}/interface/{obj}.h'.format(outdir = self.outdir, namespace = self.namespace, obj = objdef.name)
+        outname = '{dirname}/interface/{obj}.h'.format(dirname = self.objects_dir(), obj = objdef.name)
         header = FileOutput(outname, preserve_custom = self.preserve_custom)
         if objdef.is_singlet:
             header.write_from_template(template_path + '/interface/singlet.h', replacements)
@@ -460,7 +466,7 @@ class Generator(object):
                 'DESTRUCTOR': destructor
             })
 
-        outname = '{outdir}/{namespace}/src/{obj}.cc'.format(outdir = self.outdir, namespace = self.namespace, obj = objdef.name)
+        outname = '{dirname}/src/{obj}.cc'.format(dirname = self.objects_dir(), obj = objdef.name)
         source = FileOutput(outname, preserve_custom = self.preserve_custom)
         if objdef.is_singlet:
             source.write_from_template(template_path + '/src/singlet.cc', replacements)
@@ -499,11 +505,11 @@ class Generator(object):
                 'SIZEBRANCH_GENERATE': generate
             })
 
-        outname = '{outdir}/{namespace}/interface/BranchName.h'.format(outdir = self.outdir, namespace = self.namespace)
+        outname = '{dirname}/interface/BranchName.h'.format(dirname = self.objects_dir())
         outfile = FileOutput(outname)
         outfile.write_from_template(template_path + '/interface/BranchName.h', replacements)
         outfile.close()
-        outname = '{outdir}/{namespace}/src/BranchName.cc'.format(outdir = self.outdir, namespace = self.namespace)
+        outname = '{dirname}/src/BranchName.cc'.format(dirname = self.objects_dir())
         outfile = FileOutput(outname)
         outfile.write_from_template(template_path + '/src/BranchName.cc', replacements)
         outfile.close()            
@@ -539,7 +545,7 @@ class Generator(object):
             'BRANCHES': branches
         }
 
-        outname = '{outdir}/{namespace}/interface/{tree}.h'.format(outdir = self.outdir, namespace = self.namespace, tree = treedef.name)
+        outname = '{dirname}/interface/{tree}.h'.format(dirname = self.objects_dir(), tree = treedef.name)
         header = FileOutput(outname, preserve_custom = self.preserve_custom)
         header.write_from_template(template_path + '/interface/tree.h', replacements)
 
@@ -627,20 +633,20 @@ class Generator(object):
             'INIT': init
         }
 
-        outname = '{outdir}/{namespace}/src/{tree}.cc'.format(outdir = self.outdir, namespace = self.namespace, tree = treedef.name)
+        outname = '{dirname}/src/{tree}.cc'.format(dirname = self.objects_dir(), tree = treedef.name)
         source = FileOutput(outname, preserve_custom = self.preserve_custom)
         source.write_from_template(template_path + '/src/tree.cc', replacements)
 
     def write_linkdef(self):
         # write a linkdef file
-        outname = '{outdir}/{namespace}/src/LinkDef.h'.format(outdir = self.outdir, namespace = self.namespace)
+        outname = '{dirname}/src/LinkDef.h'.format(dirname = self.objects_dir())
         outfile = FileOutput(outname)
 
         includes = BufferOutput()
         for objdef in self.phobjects:
-            includes.writeline('#include "{outdir}/{namespace}/interface/{name}.h"'.format(outdir = os.path.realpath(self.outdir), namespace = self.namespace, name = objdef.name))
+            includes.writeline('#include "{dirname}/interface/{name}.h"'.format(dirname = os.path.realpath(self.objects_dir()), name = objdef.name))
         for tree in self.trees:
-            includes.writeline('#include "{outdir}/{namespace}/interface/{name}.h"'.format(outdir = os.path.realpath(self.outdir), namespace = self.namespace, name = tree.name))
+            includes.writeline('#include "{dirname}/interface/{name}.h"'.format(dirname = os.path.realpath(self.objects_dir()), name = tree.name))
         
         enums = BufferOutput()
         for enum in self.enums:
