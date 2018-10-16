@@ -108,7 +108,7 @@ namespace panda {
       typedef BranchListImpl<T, S> self_type;
 
       BranchListImpl() {}
-      BranchListImpl(std::initializer_list<TString>);
+      BranchListImpl(std::initializer_list<TString>, BranchName::ParseAs = BranchName::kFullName);
       BranchListImpl(TString const& obj, std::initializer_list<TString>);
 
       void clear() { nameRefs_.clear(); names_.clear(); }
@@ -118,18 +118,16 @@ namespace panda {
       void emplace_back(Args&&... args);
       //! Extend the list
       self_type& operator+=(self_type const&);
-      //! Create a branchlist object from the branches in the tree
-      static self_type makeList(TTree&);
 
     private:
       std::vector<name_type> names_;
     };
 
     template<class T, class S/* = T*/>
-    BranchListImpl<T, S>::BranchListImpl(std::initializer_list<TString> _il)
+    BranchListImpl<T, S>::BranchListImpl(std::initializer_list<TString> _il, BranchName::ParseAs _parseAs/* = BranchName::kFullName*/)
     {
       for (auto& name : _il)
-        names_.emplace_back(name);
+        names_.emplace_back(name, false, _parseAs);
 
       for (auto& name : names_)
         nameRefs_.push_back(&name);
@@ -170,20 +168,6 @@ namespace panda {
         nameRefs_.push_back(&name);
 
       return *this;
-    }
-
-    /*static*/
-    template<class T, class S/* = T*/>
-    BranchListImpl<T, S>
-    BranchListImpl<T, S>::makeList(TTree& _tree)
-    {
-      BranchListImpl<T, S> blist;
-    
-      auto* branches(_tree.GetListOfBranches());
-      for (auto* br : *branches)
-        blist.emplace_back(br->GetName());
-    
-      return blist;
     }
 
   }

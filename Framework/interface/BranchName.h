@@ -18,21 +18,32 @@ namespace panda {
      * An instance is created either by a full branch name ("muons.pt") or the object name ("muons")
      * or an object-branch name pair ("muons", "pt").
      */
-    class BranchName : public std::pair<TString, TString> {
+    class BranchName {
     public:
-      typedef std::pair<TString, TString> core_type;
+      enum ParseAs {
+        kFullName,
+        kObjName,
+        kAttrName
+      };
 
       BranchName() {}
-      BranchName(bool _isVeto) : isVeto_(_isVeto) {}
-      BranchName(BranchName const& src) : core_type(src), isVeto_(src.isVeto_) {}
+      BranchName(char const* obj, char const* attr, bool isVeto) : obj_(obj), attr_(attr), isVeto_(isVeto) {}
+      BranchName(BranchName const& src) : obj_(src.obj_), attr_(src.attr_), isVeto_(src.isVeto_) {}
       BranchName& operator=(BranchName const&);
 
       //! Generate a string representation of the branch name (without the veto "!")
       virtual TString toString(TString const& = "") const { return ""; }
       operator TString() const { return toString(); }
 
+      TString const& obj() const { return obj_; }
+      TString const& attr() const { return attr_; }
+
+      void setObj(char const* obj) { obj_ = obj; }
+
       //! Did the name start with a '!'?
       bool isVeto() const { return isVeto_; }
+      //! Is the name empty?
+      bool isNull() const { return obj_.Length() == 0 && attr_.Length() == 0; }
       //! Does the name match with the given name?
       /*!
        * Only considers the name part and not the veto-ness.
@@ -40,6 +51,8 @@ namespace panda {
       bool match(BranchName const&) const;
 
     protected:
+      TString obj_{""};
+      TString attr_{""};
       bool isVeto_{false};
     };
 
@@ -49,14 +62,15 @@ namespace panda {
       typedef T NameSyntax;
       typedef S SizeNameSyntax;
 
-      BranchNameImpl(char const* s, char const* b = "", bool isVeto = false);
+      BranchNameImpl(char const* name, bool isVeto = false, ParseAs = kFullName);
+      BranchNameImpl(char const* _obj, char const* _attr, bool _isVeto = false) : BranchName(_obj, _attr, _isVeto) {}
 
       TString toString(TString const& objName = "") const final;
     };
 
     template<class T, class S/* = T*/>
-    BranchNameImpl<T, S>::BranchNameImpl(char const* _name, char const* _bname/* = ""*/, bool _isVeto/* = false*/) :
-      BranchName(_isVeto)
+    BranchNameImpl<T, S>::BranchNameImpl(char const* _name, bool _isVeto/* = false*/, ParseAs _parseAs/* = kFullName*/) :
+    BranchName("", "", _isVeto)
     {
       TString name(_name);
 
@@ -65,38 +79,43 @@ namespace panda {
         name = name(1, name.Length());
       }
 
-      if (_bname && std::strlen(_bname) != 0) {
-        this->first = _name;
-        this->second = _bname;
-      }
-      else {
+      if (_parseAs == kFullName) {
         auto parsed(NameSyntax::parse(name));
-        if (parsed.first.Length() == 0) {
+        if (parsed.first.Length() == 0 && parsed.second.Length() == 0) {
           // maybe this was a size branch?
           parsed = SizeNameSyntax::parse(name);
         }
-        if (parsed.first.Length() == 0)
+        if (parsed.first.Length() == 0 && parsed.second.Length() == 0)
           throw std::runtime_error(TString::Format("Invalid branch name %s", name.Data()).Data());
 
-        core_type::operator=(parsed);
+        obj_ = parsed.first;
+        attr_ = parsed.second;
       }
+      else if (_parseAs == kObjName) 
+        obj_ = name;
+      else if (_parseAs == kAttrName)
+        attr_ = name;
     }
 
     template<class T, class S/* = T*/>
     TString
     BranchNameImpl<T, S>::toString(TString const& _objName/* = ""*/) const
     {
-      if (this->second.Length() == 0 && _objName.Length() != 0) {
-        if (this->first == "size")
-          return SizeNameSyntax::generate(_objName, this->first);
+      if (this->obj_.Length() == 0) {
+        if (_objName.Length() != 0) {
+          if (this->attr_ == "size")
+            return SizeNameSyntax::generate(_objName, this->attr_);
+          else
+            return NameSyntax::generate(_objName, this->attr_);
+        }
         else
-          return NameSyntax::generate(_objName, this->first);
+          return this->attr_;
       }
       else {
-        if (this->second == "size")
-          return SizeNameSyntax::generate(this->first, this->second);
+        if (this->attr_ == "size")
+          return SizeNameSyntax::generate(this->obj_, this->attr_);
         else
-          return NameSyntax::generate(this->first, this->second);
+          return NameSyntax::generate(this->obj_, this->attr_);
       }
     }
 

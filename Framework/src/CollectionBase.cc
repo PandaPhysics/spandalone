@@ -122,7 +122,7 @@ void
 panda::CollectionBase::setName(char const* _name)
 {
   ContainerBase::setName(_name);
-  getSizeBranchName_().first = _name;
+  getSizeBranchName_().setObj(_name);
 }
 
 void

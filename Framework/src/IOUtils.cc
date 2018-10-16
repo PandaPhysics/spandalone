@@ -123,7 +123,7 @@ panda::utils::book(TTree& _tree, BranchName const& _bName, TString const& _size,
   if (_tree.GetBranch(fullName))
     throw std::runtime_error(("Branch " + fullName + " booked twice").Data());
 
-  TString lExpr(_bName.second + _size);
+  TString lExpr(_bName.attr() + _size);
   lExpr += "/";
   lExpr += _lType;
 

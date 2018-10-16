@@ -4,7 +4,7 @@
 namespace @NAMESPACE@ {
 
   /*static*/
-  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}};
+  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}, panda::utils::BranchName::kAttrName};
 
   @NAME@::@NAME@() :
     @PARENT@()

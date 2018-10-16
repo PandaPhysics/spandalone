@@ -12,8 +12,7 @@ panda::utils::BranchList::BranchList(std::initializer_list<TString> _il)
     throw std::runtime_error(("BranchList initialization only allowed for with match-all expression (" + arg + " passed)").Data());
 
   bool isVeto(arg[0] == '!');
-  matchAll_ = BranchName(isVeto);
-  matchAll_.first = "*";
+  matchAll_ = BranchName("*", "*", isVeto);
   
   nameRefs_.push_back(&matchAll_);
 }    
@@ -66,8 +65,8 @@ panda::utils::BranchList::subList(TString const& _objName) const
     
   // loop over my branch names
   for (auto* bname : nameRefs_) {
-    if (bname->first == "*" || bname->first == _objName)
-      sublist.emplace_back(bname->first, bname->second, bname->isVeto());
+    if (bname->obj() == "*" || bname->obj() == _objName)
+      sublist.emplace_back(bname->obj(), bname->attr(), bname->isVeto());
   }
 
   return sublist;

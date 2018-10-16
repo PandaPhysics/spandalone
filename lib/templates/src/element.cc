@@ -4,7 +4,7 @@
 namespace panda {
   /*static*/
   template<>
-  @NAMESPACE@::BranchList const Collection<@NAMESPACE@::@NAME@>::branchNames{std::initializer_list<TString>{@BNAMES_WITH_SIZE@}};
+  @NAMESPACE@::BranchList const Collection<@NAMESPACE@::@NAME@>::branchNames{std::initializer_list<TString>{@BNAMES_WITH_SIZE@}, panda::utils::BranchName::kAttrName};
 }
 
 namespace @NAMESPACE@ {
@@ -13,7 +13,7 @@ namespace @NAMESPACE@ {
   @CONSTANTS@
 
   /*static*/
-  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}};
+  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}, panda::utils::BranchName::kAttrName};
  
   void
   @NAME@::datastore::allocate(UInt_t _nmax)

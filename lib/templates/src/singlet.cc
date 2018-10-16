@@ -7,7 +7,7 @@ namespace @NAMESPACE@ {
   @CONSTANTS@
 
   /*static*/
-  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}};
+  BranchList const @NAME@::branchNames{std::initializer_list<TString>{@BNAMES@}, panda::utils::BranchName::kAttrName};
     
   @IF[INSTANTIABLE]@
   @NAME@::@NAME@(char const* _name/* = ""*/) :
